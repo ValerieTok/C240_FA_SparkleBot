@@ -1,0 +1,34 @@
+<section class="page-hero compact">
+  <h1><%= page.heading %></h1>
+  <p><%= page.description %></p>
+</section>
+
+<section class="content-section">
+  <div class="section-heading">
+    <h2>Tools Used</h2>
+    <p>These tools support chatbot creation, AI experiments, research, and development.</p>
+  </div>
+  <div class="card-grid">
+    <% tools.forEach((tool) => { %>
+      <article class="card">
+        <h3><%= tool.name %></h3>
+        <p><%= tool.purpose %></p>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="section-heading">
+    <h2>AI Structures</h2>
+    <p>Key AI concepts used in the SparkleBot experience.</p>
+  </div>
+  <div class="card-grid">
+    <% structures.forEach((structure) => { %>
+      <article class="card">
+        <h3><%= structure.name %></h3>
+        <p><%= structure.explanation %></p>
+      </article>
+    <% }) %>
+  </div>
+</section>

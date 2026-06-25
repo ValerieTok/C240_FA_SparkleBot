@@ -1,0 +1,39 @@
+<section class="page-hero compact">
+  <h1><%= page.heading %></h1>
+  <p><%= page.description %></p>
+</section>
+
+<section class="tool-panel">
+  <form class="form-card" action="/checker" method="POST" data-analysis-form>
+    <label for="messageInput">Suspicious message</label>
+    <textarea
+      id="messageInput"
+      name="message"
+      rows="8"
+      placeholder="Paste the suspicious SMS, WhatsApp message, email, or job offer here..."
+      required
+    ><%= submittedMessage %></textarea>
+    <button class="btn btn-primary" type="submit">Check Message</button>
+    <div class="analysis-loading hidden" data-analysis-loading role="status" aria-live="polite">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <span>Analyzing message… This may take a few seconds.</span>
+    </div>
+  </form>
+
+  <% if (errorMessage) { %>
+    <article class="result-card">
+      <h2>Analysis Error</h2>
+      <p><%= errorMessage %></p>
+    </article>
+  <% } %>
+
+  <% if (analysis) { %>
+    <article class="result-card" aria-live="polite">
+      <h2>Scam Risk Analysis</h2>
+      <p><strong>Risk Level:</strong> <%= analysis.riskLevel %></p>
+      <p><strong>Possible Scam Type:</strong> <%= analysis.scamType %></p>
+      <p><strong>Red Flags:</strong> <%= analysis.redFlags.length ? analysis.redFlags.join(", ") : "None returned" %></p>
+      <p><strong>Recommended Action:</strong> <%= analysis.recommendedAction %></p>
+    </article>
+  <% } %>
+</section>

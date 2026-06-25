@@ -1,0 +1,30 @@
+{
+  "name": "sparklebot",
+  "version": "1.0.0",
+  "description": "SparkleBot AI-powered anti-scam web application.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [
+    "express",
+    "ejs",
+    "mvc",
+    "anti-scam"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@botpress/chat": "^0.5.5",
+    "@google/genai": "^2.10.0",
+    "dotenv": "^17.4.2",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "json5": "^2.2.3",
+    "multer": "^2.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

@@ -1,0 +1,36 @@
+<section class="page-hero compact">
+  <h1><%= page.heading %></h1>
+  <p><%= page.description %></p>
+</section>
+
+<section class="content-section two-column">
+  <article class="chatbot-panel">
+    <h2>Chat With SparkleBot</h2>
+    <div
+      id="sparklebot-webchat"
+      class="webchat-box"
+      data-bot-name="<%= botpress.botName %>"
+    >
+      <div class="webchat-loading">
+        <p>Loading SparkleBot...</p>
+      </div>
+    </div>
+  </article>
+
+  <aside class="card">
+    <h2>Example Questions</h2>
+    <ul class="check-list">
+      <% questions.forEach((question) => { %>
+        <li><%= question %></li>
+      <% }) %>
+    </ul>
+  </aside>
+</section>
+
+<% if (botpress.webchatInjectUrl) { %>
+  <script src="<%= botpress.webchatInjectUrl %>"></script>
+<% } %>
+<% if (botpress.webchatConfigUrl) { %>
+  <script src="<%= botpress.webchatConfigUrl %>" defer></script>
+<% } %>
+<script src="/js/chatbot.js" defer></script>

@@ -1,0 +1,29 @@
+<section class="hero">
+  <div class="hero-layout">
+    <div class="hero-content">
+      <p class="eyebrow">AI-powered anti-scam portal</p>
+      <h1><%= page.heading %></h1>
+      <p class="tagline"><%= page.tagline %></p>
+      <p class="hero-description"><%= page.description %></p>
+    </div>
+    <div class="hero-logo-card">
+      <img src="/images/sparklebot-logo.png" alt="SparkleBot logo: Protect. Detect. Prevent.">
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="section-heading">
+    <h2>Core Features</h2>
+    <p>Three focused tools to help users inspect suspicious content and act safely.</p>
+  </div>
+  <div class="card-grid">
+    <% features.forEach((feature) => { %>
+      <a class="card feature-card" href="<%= feature.link %>">
+        <h3><%= feature.title %></h3>
+        <p><%= feature.description %></p>
+        <span class="text-link"><%= feature.buttonText %></span>
+      </a>
+    <% }) %>
+  </div>
+</section>
