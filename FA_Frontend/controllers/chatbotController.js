@@ -1,7 +1,6 @@
 const pageModel = require("../models/pageModel");
 function getBotpressConfig() {
   return {
-    botId: process.env.BOTPRESS_BOT_ID || "",
     botName: "SparkleBot",
     webchatInjectUrl: process.env.BOTPRESS_WEBCHAT_INJECT_URL || "",
     webchatConfigUrl: process.env.BOTPRESS_WEBCHAT_CONFIG_URL || ""

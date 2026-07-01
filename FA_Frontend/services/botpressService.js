@@ -1,15 +1,41 @@
 const { Client } = require("@botpress/chat");
 const JSON5 = require("json5");
 const DEFAULT_TIMEOUT_MS = 15000;
+const CHAT_API_HOST = "chat.botpress.cloud";
 
 function getBotpressConfig() {
-  const webhookId = process.env.BOTPRESS_WEBHOOK_ID?.trim();
+  const webhookValue = (
+    process.env.BOTPRESS_CHAT_WEBHOOK_ID ||
+    process.env.BOTPRESS_CHAT_WEBHOOK_URL ||
+    process.env.BOTPRESS_WEBHOOK_ID ||
+    ""
+  ).trim();
 
-  if (!webhookId) {
-    throw new Error("BOTPRESS_WEBHOOK_ID missing.");
+  if (!webhookValue) {
+    throw new Error("BOTPRESS_CHAT_WEBHOOK_ID missing.");
   }
 
-  return { webhookId };
+  return { webhookId: getChatWebhookId(webhookValue) };
+}
+
+function getChatWebhookId(value) {
+  if (!/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  const url = new URL(value);
+
+  if (url.hostname !== CHAT_API_HOST) {
+    throw new Error("BOTPRESS_CHAT_WEBHOOK_ID must come from the Botpress Chat Integration webhook URL.");
+  }
+
+  const [webhookId] = url.pathname.split("/").filter(Boolean);
+
+  if (!webhookId) {
+    throw new Error("BOTPRESS_CHAT_WEBHOOK_ID missing.");
+  }
+
+  return webhookId;
 }
 
 async function analyzeMessage(message) {
@@ -282,14 +308,21 @@ function getFriendlyBotpressError(error) {
     return "Botpress took too long to respond. Please try again.";
   }
 
-  if (message.includes("BOTPRESS_WEBHOOK_ID")) {
-    return "Botpress is not configured yet. Please add BOTPRESS_WEBHOOK_ID to your .env file.";
+  if (message.includes("Botpress Chat Integration webhook URL")) {
+    return [
+      "Botpress Chat API is configured with the wrong URL.",
+      "Use the Chat Integration webhook URL from Botpress Cloud for BOTPRESS_CHAT_WEBHOOK_ID or BOTPRESS_CHAT_WEBHOOK_URL."
+    ].join(" ");
+  }
+
+  if (message.includes("BOTPRESS_CHAT_WEBHOOK_ID")) {
+    return "Botpress Chat API is not configured yet. Add BOTPRESS_CHAT_WEBHOOK_ID from the Botpress Chat Integration webhook URL to your .env file.";
   }
 
   if (message.includes("Failed to connect to url")) {
     return [
       "Botpress could not find the configured webhook.",
-      "Set BOTPRESS_WEBHOOK_ID to the ID from your Botpress Chat Integration webhook URL, not the webchat clientId."
+      "Set BOTPRESS_CHAT_WEBHOOK_ID to the ID from your Botpress Chat Integration webhook URL, not the Webchat Config URL or Inject URL."
     ].join(" ");
   }
 
