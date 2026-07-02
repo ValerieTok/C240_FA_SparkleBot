@@ -25,6 +25,38 @@
       <% }) %>
     </ul>
   </aside>
+
+  <aside class="card">
+    <h2>Feedback</h2>
+    <form action="/feedback" method="POST">
+      <input type="hidden" name="page" value="chatbot">
+
+      <% if (feedbackMessage) { %>
+        <p class="form-status success"><%= feedbackMessage %></p>
+      <% } %>
+
+      <% if (feedbackError) { %>
+        <p class="form-status error"><%= feedbackError %></p>
+      <% } %>
+
+      <fieldset class="choice-group">
+        <legend>Was SparkleBot helpful?</legend>
+        <label>
+          <input type="radio" name="rating" value="helpful" required>
+          Helpful
+        </label>
+        <label>
+          <input type="radio" name="rating" value="not_helpful" required>
+          Not helpful
+        </label>
+      </fieldset>
+
+      <label for="feedbackComment">Comment (optional)</label>
+      <textarea id="feedbackComment" name="comment" rows="4" placeholder="What should be improved?"></textarea>
+
+      <button class="btn btn-primary" type="submit">Send Feedback</button>
+    </form>
+  </aside>
 </section>
 
 <% if (botpress.webchatInjectUrl) { %>

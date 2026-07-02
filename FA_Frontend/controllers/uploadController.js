@@ -11,6 +11,8 @@ function renderUploadPage(res, options = {}) {
     extractedText: options.extractedText || null,
     analysis: options.analysis || null,
     errorMessage: options.errorMessage || null,
+    reportMessage: options.reportMessage || null,
+    reportError: options.reportError || null,
     body: "pages/upload"
   });
 }

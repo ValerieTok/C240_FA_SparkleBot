@@ -1,4 +1,5 @@
 const pageModel = require("../models/pageModel");
+const n8nService = require("../services/n8nService");
 
 const suspiciousTerms = [
   { term: "otp", flag: "Requests or mentions an OTP" },
@@ -43,7 +44,7 @@ exports.analyzeMessage = (req, res) => {
 
   const analysis = analyzeMessageLocally(submittedMessage);
 
-  sendN8nHighRiskAlert(analysis, submittedMessage);
+  n8nService.sendHighRiskAlert(analysis, submittedMessage);
 
   renderCheckerPage(res, {
     submittedMessage,
@@ -110,92 +111,3 @@ function getRecommendedAction(riskLevel) {
   return "No obvious scam keywords were found, but stay cautious and verify unexpected requests through official channels.";
 }
 
-function sendN8nHighRiskAlert(analysis, userMessage) {
-  const webhookUrl = process.env.N8N_HIGH_RISK_WEBHOOK_URL?.trim();
-
-  if (!isHighRiskAnalysis(analysis)) {
-    return;
-  }
-
-  if (!webhookUrl) {
-    console.error("n8n high-risk alert failed: N8N_HIGH_RISK_WEBHOOK_URL is missing.");
-    return;
-  }
-
-  // n8n integration: send high-risk Message Checker cases in the background.
-  // This promise is intentionally not awaited so the user still sees the analysis
-  // even if the n8n webhook is slow or unavailable.
-  fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      riskLevel: "High",
-      scamType: "Phishing",
-      platform: "Message Checker",
-      message: userMessage
-    })
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(getN8nWebhookErrorMessage(response.status, webhookUrl));
-      }
-    })
-    .catch((error) => {
-      console.error("n8n high-risk alert failed:", error.message || error);
-    });
-}
-
-function getN8nWebhookErrorMessage(status, webhookUrl) {
-  if (status === 404 && webhookUrl.includes("/webhook-test/")) {
-    return [
-      "n8n webhook returned HTTP 404.",
-      "The test webhook only works while n8n is listening for a test event.",
-      "Click 'Listen for test event' in n8n before submitting the checker form, or use the production /webhook/ URL with an active workflow."
-    ].join(" ");
-  }
-
-  return `n8n webhook returned HTTP ${status}`;
-}
-
-function isHighRiskAnalysis(analysis) {
-  const riskLevel = getAnalysisValue(analysis, "riskLevel").toLowerCase();
-
-  if (riskLevel === "high") {
-    return true;
-  }
-
-  const riskText = stringifyAnalysis(analysis).toLowerCase();
-
-  return (
-    riskText.includes("scam risk: high") ||
-    riskText.includes("risk level: high") ||
-    riskText.includes("high risk")
-  );
-}
-
-function getAnalysisValue(analysis, key) {
-  if (!analysis || typeof analysis !== "object") {
-    return "";
-  }
-
-  return String(analysis[key] || "").trim();
-}
-
-function stringifyAnalysis(analysis) {
-  if (typeof analysis === "string") {
-    return analysis;
-  }
-
-  if (!analysis || typeof analysis !== "object") {
-    return "";
-  }
-
-  return [
-    analysis.riskLevel,
-    analysis.scamType,
-    Array.isArray(analysis.redFlags) ? analysis.redFlags.join(" ") : analysis.redFlags,
-    analysis.recommendedAction
-  ]
-    .filter(Boolean)
-    .join(" ");
-}

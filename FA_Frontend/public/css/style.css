@@ -307,6 +307,10 @@ h1 {
   gap: 18px;
 }
 
+.two-column > .chatbot-panel {
+  grid-row: span 2;
+}
+
 label {
   display: block;
   font-weight: 800;
@@ -414,6 +418,47 @@ textarea {
 .form-note {
   color: var(--grey-700);
   margin: 12px 0 0;
+}
+
+.form-status {
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-weight: 700;
+}
+
+.form-status.success {
+  background: #e7f8ef;
+  color: #146b3a;
+}
+
+.form-status.error {
+  background: #fff0f0;
+  color: #9f1c1c;
+}
+
+.choice-group {
+  border: 1px solid var(--grey-200);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0 0 16px;
+}
+
+.choice-group legend {
+  font-weight: 800;
+  padding: 0 6px;
+}
+
+.choice-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-weight: 700;
+}
+
+.choice-group input {
+  width: auto;
+  margin: 0;
 }
 
 .hidden {
