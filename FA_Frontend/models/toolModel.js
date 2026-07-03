@@ -5,7 +5,7 @@ const tools = [
   },
   {
     name: "Google AI Studio / Gemini",
-    purpose: "Supports AI prototyping, prompt testing, and possible future message analysis."
+    purpose: "Extracts readable text from uploaded screenshots before scam risk analysis."
   },
   {
     name: "NotebookLM",

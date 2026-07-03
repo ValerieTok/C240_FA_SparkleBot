@@ -16,12 +16,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@botpress/chat": "^0.5.5",
-    "@google/genai": "^2.10.0",
     "dotenv": "^17.4.2",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
-    "json5": "^2.2.3",
     "multer": "^2.2.0"
   },
   "devDependencies": {

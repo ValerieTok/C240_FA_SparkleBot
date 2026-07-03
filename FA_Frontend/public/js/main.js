@@ -8,6 +8,26 @@ if (navToggle && navLinks) {
 }
 
 const screenshotInput = document.getElementById("screenshotInput");
+const modeTabs = document.querySelector("[data-mode-tabs]");
+const resultPanels = document.querySelectorAll("[data-result-panel]");
+const emptyResults = document.querySelector("[data-empty-results]");
+
+function updateResultPanels(activeMode) {
+  let hasVisibleResult = false;
+
+  resultPanels.forEach((panel) => {
+    const shouldShow = panel.dataset.resultPanel === activeMode && panel.dataset.hasResult === "true";
+    panel.classList.toggle("hidden", !shouldShow);
+
+    if (shouldShow) {
+      hasVisibleResult = true;
+    }
+  });
+
+  if (emptyResults) {
+    emptyResults.classList.toggle("hidden", hasVisibleResult);
+  }
+}
 
 if (screenshotInput) {
   screenshotInput.addEventListener("change", () => {
@@ -25,6 +45,33 @@ if (screenshotInput) {
   });
 }
 
+if (modeTabs) {
+  const tabLabels = modeTabs.querySelectorAll("[data-mode-tab]");
+  const panels = document.querySelectorAll("[data-mode-panel]");
+
+  tabLabels.forEach((label) => {
+    const input = label.querySelector('input[type="radio"]');
+
+    input.addEventListener("change", () => {
+      tabLabels.forEach((candidate) => {
+        candidate.classList.toggle("active", candidate === label);
+      });
+
+      panels.forEach((panel) => {
+        panel.classList.toggle("hidden", panel.dataset.modePanel !== input.value);
+      });
+
+      updateResultPanels(input.value);
+    });
+  });
+
+  const activeInput = modeTabs.querySelector('input[type="radio"]:checked');
+
+  if (activeInput) {
+    updateResultPanels(activeInput.value);
+  }
+}
+
 document.querySelectorAll("[data-analysis-form]").forEach((form) => {
   form.addEventListener("submit", () => {
     const submitButton = form.querySelector('button[type="submit"]');
@@ -34,7 +81,7 @@ document.querySelectorAll("[data-analysis-form]").forEach((form) => {
 
     if (submitButton) {
       submitButton.disabled = true;
-      submitButton.textContent = "Analyzing…";
+      submitButton.textContent = "Analyzing...";
     }
 
     if (loadingIndicator) {

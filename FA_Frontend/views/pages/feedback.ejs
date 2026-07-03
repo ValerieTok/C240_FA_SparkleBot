@@ -1,0 +1,40 @@
+<section class="page-hero compact">
+  <h1><%= page.heading %></h1>
+  <p><%= page.description %></p>
+</section>
+
+<section class="tool-panel feedback-layout">
+  <form class="form-card feedback-page-card" action="/feedback" method="POST">
+    <input type="hidden" name="page" value="<%= values.page || 'feedback' %>">
+
+    <% if (feedbackMessage) { %>
+      <p class="form-status success"><%= feedbackMessage %></p>
+    <% } %>
+
+    <% if (feedbackError) { %>
+      <p class="form-status error"><%= feedbackError %></p>
+    <% } %>
+
+    <fieldset class="choice-group">
+      <legend>Was SparkleBot helpful?</legend>
+      <label>
+        <input type="radio" name="rating" value="helpful" required>
+        Helpful
+      </label>
+      <label>
+        <input type="radio" name="rating" value="not_helpful" required>
+        Not helpful
+      </label>
+    </fieldset>
+
+    <label for="feedbackComment">Comment <span>(optional)</span></label>
+    <textarea
+      id="feedbackComment"
+      name="comment"
+      rows="6"
+      placeholder="What should be improved?"
+    ><%= values.comment || '' %></textarea>
+
+    <button class="btn btn-primary" type="submit">Send Feedback</button>
+  </form>
+</section>

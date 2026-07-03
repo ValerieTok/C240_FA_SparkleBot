@@ -3,37 +3,117 @@
   <p><%= page.description %></p>
 </section>
 
-<section class="tool-panel">
-  <form class="form-card" action="/checker" method="POST" data-analysis-form>
-    <label for="messageInput">Suspicious message</label>
+<section class="tool-panel detector-layout">
+  <form class="form-card detector-card" action="/checker" method="POST" enctype="multipart/form-data" data-analysis-form>
+    <fieldset class="mode-tabs" data-mode-tabs>
+      <legend>What do you want to check?</legend>
+      <label class="<%= activeMode === 'text' ? 'active' : '' %>" data-mode-tab="text">
+        <input type="radio" name="checkType" value="text" <%= activeMode === 'text' ? 'checked' : '' %>>
+        <span>Paste text</span>
+      </label>
+      <label class="<%= activeMode === 'url' ? 'active' : '' %>" data-mode-tab="url">
+        <input type="radio" name="checkType" value="url" <%= activeMode === 'url' ? 'checked' : '' %>>
+        <span>Paste URL</span>
+      </label>
+      <label class="<%= activeMode === 'image' ? 'active' : '' %>" data-mode-tab="image">
+        <input type="radio" name="checkType" value="image" <%= activeMode === 'image' ? 'checked' : '' %>>
+        <span>Upload image</span>
+      </label>
+    </fieldset>
+
+    <div class="detector-input <%= activeMode === 'text' ? '' : 'hidden' %>" data-mode-panel="text">
+      <label for="messageInput">Suspicious text</label>
+      <textarea
+        id="messageInput"
+        name="message"
+        rows="8"
+        placeholder="Paste the suspicious SMS, WhatsApp message, email, job offer, or other text here..."
+      ><%= submittedMessage %></textarea>
+    </div>
+
+    <div class="detector-input <%= activeMode === 'url' ? '' : 'hidden' %>" data-mode-panel="url">
+      <label for="urlInput">Suspicious URL</label>
+      <input
+        id="urlInput"
+        name="url"
+        type="url"
+        placeholder="https://example.com/suspicious-link"
+        value="<%= submittedUrl %>"
+      >
+    </div>
+
+    <div class="detector-input image-upload-panel <%= activeMode === 'image' ? '' : 'hidden' %>" data-mode-panel="image">
+      <label for="screenshotInput">Suspicious image</label>
+      <label class="drop-zone" for="screenshotInput">
+        <span class="drop-zone-icon" aria-hidden="true">IMG</span>
+        <strong>Drop an image here or click to browse</strong>
+        <span>Screenshots of messages, emails, texts, or websites</span>
+      </label>
+      <input id="screenshotInput" class="file-input" name="screenshot" type="file" accept="image/*">
+
+      <article class="inline-preview <%= uploadedImage && activeMode === 'image' ? '' : 'hidden' %>" id="screenshotPreviewCard">
+        <h2>Image Preview</h2>
+        <img id="screenshotPreview" src="<%= uploadedImage || '' %>" alt="Uploaded scam screenshot preview">
+      </article>
+    </div>
+
+    <label for="notesInput">Additional notes <span>(optional)</span></label>
     <textarea
-      id="messageInput"
-      name="message"
-      rows="8"
-      placeholder="Paste the suspicious SMS, WhatsApp message, email, or job offer here..."
-      required
-    ><%= submittedMessage %></textarea>
-    <button class="btn btn-primary" type="submit">Check Message</button>
+      id="notesInput"
+      name="notes"
+      rows="4"
+      placeholder="Any extra notes about this message, link, or image, e.g. received via WhatsApp"
+    ><%= notes %></textarea>
+
+    <button class="btn btn-primary" type="submit">Analyze</button>
     <div class="analysis-loading hidden" data-analysis-loading role="status" aria-live="polite">
       <span class="loading-spinner" aria-hidden="true"></span>
-      <span>Analyzing message… This may take a few seconds.</span>
+      <span>Analyzing content... This may take a few seconds.</span>
     </div>
   </form>
 
-  <% if (errorMessage) { %>
-    <article class="result-card">
-      <h2>Analysis Error</h2>
-      <p><%= errorMessage %></p>
-    </article>
-  <% } %>
+  <aside class="results-panel" aria-live="polite">
+    <% if (errorMessage) { %>
+      <article class="result-card" data-result-panel="<%= activeMode %>" data-has-result="true">
+        <h2>Analysis Error</h2>
+        <p><%= errorMessage %></p>
+      </article>
+    <% } %>
 
-  <% if (analysis) { %>
-    <article class="result-card" aria-live="polite">
-      <h2>Scam Risk Analysis</h2>
-      <p><strong>Risk Level:</strong> <%= analysis.riskLevel %></p>
-      <p><strong>Possible Scam Type:</strong> <%= analysis.scamType %></p>
-      <p><strong>Red Flags:</strong> <%= analysis.redFlags.length ? analysis.redFlags.join(", ") : "None returned" %></p>
-      <p><strong>Recommended Action:</strong> <%= analysis.recommendedAction %></p>
+    <% if (extractedText && activeMode === 'image') { %>
+      <article class="result-card extracted-text-card" data-result-panel="image" data-has-result="true">
+        <h2>Extracted Text</h2>
+        <pre><%= extractedText %></pre>
+      </article>
+    <% } %>
+
+    <% if (analysis) { %>
+      <article class="result-card" data-result-panel="<%= activeMode %>" data-has-result="true">
+        <h2>Scam Risk Analysis</h2>
+        <dl class="result-list">
+          <div>
+            <dt>Risk Level</dt>
+            <dd><%= analysis.riskLevel %></dd>
+          </div>
+          <div>
+            <dt>Possible Scam Type</dt>
+            <dd><%= analysis.scamType %></dd>
+          </div>
+          <div>
+            <dt>Red Flags</dt>
+            <dd><%= analysis.redFlags.length ? analysis.redFlags.join(", ") : "None returned" %></dd>
+          </div>
+          <div>
+            <dt>Recommended Action</dt>
+            <dd><%= analysis.recommendedAction %></dd>
+          </div>
+        </dl>
+      </article>
+    <% } %>
+
+    <article class="empty-results <%= !errorMessage && !analysis ? '' : 'hidden' %>" data-empty-results>
+      <span class="loading-spinner idle" aria-hidden="true"></span>
+      <p>Analysis results will appear here</p>
     </article>
-  <% } %>
+  </aside>
 </section>

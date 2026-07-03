@@ -1,79 +1,97 @@
 const fs = require("fs");
-const { GoogleGenAI } = require("@google/genai");
 
-const extractionPrompt =
-  "Extract all visible text from this screenshot. The image may contain an SMS, WhatsApp message, email, job offer, banking alert, or scam message. Return only the extracted text.";
-
-function getGeminiModels() {
-  return ["gemini-2.5-flash-lite", "gemini-2.5-flash"];
-}
+const DEFAULT_MODEL = "gemini-2.5-flash";
 
 async function extractTextFromImage(imagePath, mimeType) {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY is missing.");
+  const apiKey = String(process.env.GEMINI_API_KEY || "").trim();
+
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY missing.");
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const models = getGeminiModels();
   const imageBuffer = fs.readFileSync(imagePath);
-  const base64Image = imageBuffer.toString("base64");
+  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-  for (const model of models) {
-    try {
-      const response = await ai.models.generateContent({
-        model,
-        contents: [
-          {
-            inlineData: {
-              mimeType,
-              data: base64Image
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: [
+                "Extract only the readable text from this image.",
+                "Preserve URLs, phone numbers, account names, amounts, dates, and suspicious instructions.",
+                "If there is no readable text, return: No readable text found."
+              ].join(" ")
+            },
+            {
+              inlineData: {
+                mimeType,
+                data: imageBuffer.toString("base64")
+              }
             }
-          },
-          {
-            text: extractionPrompt
-          }
-        ]
-      });
+          ]
+        }
+      ]
+    })
+  });
 
-      return (response.text || "").trim();
-    } catch (error) {
-      if (isTemporaryModelError(error) && model !== models[models.length - 1]) {
-        continue;
-      }
+  const payload = await response.json().catch(() => ({}));
 
-      throw error;
-    }
+  if (!response.ok) {
+    throw new Error(getGeminiErrorMessage(response.status, payload));
   }
 
-  return "";
+  const text = payload.candidates?.[0]?.content?.parts
+    ?.map((part) => part.text || "")
+    .join("\n")
+    .trim();
+
+  if (!text) {
+    throw new Error("Gemini did not return extracted text.");
+  }
+
+  return text;
 }
 
-function isTemporaryModelError(error) {
-  const message = error.message || "";
-
-  return /"code"\s*:\s*503/.test(message) || /"status"\s*:\s*"UNAVAILABLE"/.test(message);
+function getGeminiErrorMessage(status, payload) {
+  const message = payload?.error?.message || "Gemini OCR failed.";
+  return `Gemini returned HTTP ${status}: ${message}`;
 }
 
 function getFriendlyGeminiError(error) {
   const message = error.message || "";
 
-  if (/"code"\s*:\s*429/.test(message) || /"status"\s*:\s*"RESOURCE_EXHAUSTED"/.test(message)) {
-    return "Gemini is rate limited right now. Please wait a minute before uploading another screenshot.";
+  if (message.includes("GEMINI_API_KEY")) {
+    return "Gemini API key is missing. Add GEMINI_API_KEY to your .env file.";
   }
 
-  if (/"code"\s*:\s*503/.test(message) || /"status"\s*:\s*"UNAVAILABLE"/.test(message)) {
-    return "Gemini is experiencing high demand right now. Please try again later.";
+  if (message.includes("HTTP 400")) {
+    return "Gemini could not read this image. Please upload a clearer screenshot.";
   }
 
-  if (/"code"\s*:\s*404/.test(message) || /"status"\s*:\s*"NOT_FOUND"/.test(message)) {
-    return "The configured Gemini OCR model is not available.";
+  if (message.includes("HTTP 404")) {
+    return "The configured Gemini model is not available. Use gemini-2.5-flash or another model that supports image input and generateContent.";
   }
 
-  if (message.includes("GEMINI_API_KEY is missing")) {
-    return "Gemini API key is missing. Please add GEMINI_API_KEY to your .env file.";
+  if (message.includes("HTTP 401") || message.includes("HTTP 403")) {
+    return "Gemini rejected the configured API key. Please check GEMINI_API_KEY in your .env file.";
   }
 
-  return "Sorry, the image could not be analyzed right now. Please try again later.";
+  if (message.includes("HTTP 429")) {
+    return "Gemini is rate limited right now. Please wait a minute and try again.";
+  }
+
+  if (message.includes("HTTP 503")) {
+    return "Gemini OCR is temporarily unavailable. Please try again later.";
+  }
+
+  return "Gemini could not extract text from this image right now. Please try again later.";
 }
 
 module.exports = {

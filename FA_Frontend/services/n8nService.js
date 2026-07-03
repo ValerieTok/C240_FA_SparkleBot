@@ -1,8 +1,8 @@
-function postWebhook(webhookUrl, payload, workflowName) {
+function postWebhook(webhookUrl, payload, workflowName, envName) {
   const trimmedUrl = String(webhookUrl || "").trim();
 
   if (!trimmedUrl) {
-    console.error(`n8n ${workflowName} webhook failed: webhook URL is missing.`);
+    console.warn(`n8n ${workflowName} webhook skipped: ${envName} is not configured.`);
     return;
   }
 
@@ -38,7 +38,8 @@ function sendHighRiskAlert(analysis, userMessage) {
       recommendedAction: analysis.recommendedAction,
       message: userMessage
     },
-    "high-risk alert"
+    "high-risk alert",
+    "N8N_HIGH_RISK_WEBHOOK_URL"
   );
 }
 
@@ -51,7 +52,8 @@ function sendScamReport(report) {
       source: "Website Report Scam Form",
       ...report
     },
-    "scam report"
+    "scam report",
+    "N8N_SCAM_REPORT_WEBHOOK_URL"
   );
 }
 
@@ -64,7 +66,8 @@ function sendFeedback(feedback) {
       source: "Website Feedback Form",
       ...feedback
     },
-    "feedback"
+    "feedback",
+    "N8N_FEEDBACK_WEBHOOK_URL"
   );
 }
 

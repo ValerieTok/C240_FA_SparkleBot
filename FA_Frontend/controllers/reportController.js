@@ -1,20 +1,21 @@
 const pageModel = require("../models/pageModel");
 const n8nService = require("../services/n8nService");
 
-function renderUploadPage(res, options = {}) {
+function renderReportPage(res, options = {}) {
   res.render("layout", {
-    title: "Screenshot Upload",
-    currentPage: "upload",
-    page: pageModel.getPage("upload"),
-    uploadedImage: null,
-    extractedText: null,
-    analysis: null,
-    errorMessage: null,
+    title: "Report Scam",
+    currentPage: "report",
+    page: pageModel.getPage("report"),
     reportMessage: options.reportMessage || null,
     reportError: options.reportError || null,
-    body: "pages/upload"
+    values: options.values || {},
+    body: "pages/report"
   });
 }
+
+exports.showReport = (req, res) => {
+  renderReportPage(res);
+};
 
 exports.submitReport = (req, res) => {
   const scamType = String(req.body.scamType || "").trim();
@@ -23,8 +24,14 @@ exports.submitReport = (req, res) => {
   const contact = String(req.body.contact || "").trim();
 
   if (!scamType || !platform || !message) {
-    renderUploadPage(res, {
-      reportError: "Please fill in the scam type, platform, and scam details before submitting."
+    renderReportPage(res, {
+      reportError: "Please fill in the scam type, platform, and scam details before submitting.",
+      values: {
+        scamType,
+        platform,
+        message,
+        contact
+      }
     });
     return;
   }
@@ -36,7 +43,7 @@ exports.submitReport = (req, res) => {
     contact: contact || "Not provided"
   });
 
-  renderUploadPage(res, {
+  renderReportPage(res, {
     reportMessage: "Your scam report was submitted for review."
   });
 };

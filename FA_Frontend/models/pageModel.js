@@ -3,22 +3,27 @@ const pages = {
     heading: "SparkleBot",
     tagline: "Think Before You Click",
     description:
-      "An AI-powered anti-scam portal that helps users check suspicious messages, review screenshots, and get practical scam guidance from SparkleBot."
+      "An AI-powered anti-scam portal that helps users check suspicious text, URLs, screenshots, and get practical scam guidance from SparkleBot."
   },
   checker: {
-    heading: "Message Checker",
+    heading: "Scam Detector",
     description:
-      "Paste a suspicious message and send it to the connected Botpress chatbot for scam risk analysis."
-  },
-  upload: {
-    heading: "Screenshot Upload",
-    description:
-      "Upload a screenshot of a suspicious message or website, extract the text, and send it to Botpress for scam risk analysis."
+      "Paste suspicious text, check a URL, or upload a screenshot. Gemini extracts text from images, then OpenAI reviews the content for scam risk, red flags, and safer next steps."
   },
   chatbot: {
     heading: "AI Chatbot",
     description:
       "Ask SparkleBot about suspicious messages, scam warning signs, and safer next steps."
+  },
+  report: {
+    heading: "Report Scam",
+    description:
+      "Submit suspicious activity for admin review through the connected n8n workflow."
+  },
+  feedback: {
+    heading: "Feedback",
+    description:
+      "Share whether SparkleBot was helpful and what should be improved."
   },
   about: {
     heading: "About AI",

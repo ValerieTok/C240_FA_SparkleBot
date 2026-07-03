@@ -14,8 +14,6 @@ exports.showChatbot = (req, res) => {
     page: pageModel.getPage("chatbot"),
     questions: pageModel.getChatbotQuestions(),
     botpress: getBotpressConfig(),
-    feedbackMessage: null,
-    feedbackError: null,
     body: "pages/chatbot"
   });
 };

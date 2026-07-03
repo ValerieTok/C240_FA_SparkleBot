@@ -2,7 +2,7 @@ import { Knowledge, DataSource } from '@botpress/runtime'
 
 const scamSource = DataSource.Directory.fromPath('src/knowledge', {
   id: 'scam-guidelines',
-  filter: (filePath) => filePath.endsWith('.md'),
+  filter: (filePath) => /\.(md|pdf|txt|html|docx?)$/i.test(filePath),
 })
 
 export const ScamKnowledge = new Knowledge({
