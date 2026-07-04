@@ -1,6 +1,5 @@
 const pageModel = require("../models/pageModel");
 const geminiService = require("../services/geminiService");
-const openaiService = require("../services/openaiService");
 const n8nService = require("../services/n8nService");
 
 function renderCheckerPage(res, options = {}) {
@@ -82,7 +81,11 @@ async function analyzeText(req, res, notes) {
   }
 
   const analysisInput = buildAnalysisInput(submittedMessage, notes);
-  const analysis = await openaiService.analyzeText(analysisInput);
+  const analysis = await n8nService.requestScamAnalysis({
+    contentType: "text",
+    content: analysisInput,
+    notes
+  });
 
   n8nService.sendHighRiskAlert(analysis, analysisInput);
 
@@ -107,7 +110,11 @@ async function analyzeUrl(req, res, notes) {
   }
 
   const analysisInput = buildAnalysisInput(submittedUrl, notes);
-  const analysis = await openaiService.analyzeUrl(analysisInput);
+  const analysis = await n8nService.requestScamAnalysis({
+    contentType: "url",
+    content: analysisInput,
+    notes
+  });
 
   n8nService.sendHighRiskAlert(analysis, analysisInput);
 
@@ -132,7 +139,13 @@ async function analyzeImage(req, res, notes) {
   const uploadedImage = `/uploads/${req.file.filename}`;
   const extractedText = await geminiService.extractTextFromImage(req.file.path, req.file.mimetype);
   const analysisInput = buildAnalysisInput(`Text extracted from uploaded image:\n${extractedText}`, notes);
-  const analysis = await openaiService.analyzeText(analysisInput);
+  const analysis = await n8nService.requestScamAnalysis({
+    contentType: "image",
+    content: analysisInput,
+    notes,
+    extractedText,
+    uploadedImage
+  });
 
   n8nService.sendHighRiskAlert(analysis, analysisInput);
 
@@ -152,6 +165,6 @@ function getFriendlyAnalysisError(error) {
     return geminiService.getFriendlyGeminiError(error);
   }
 
-  return openaiService.getFriendlyOpenAIError(error);
+  return n8nService.getFriendlyN8nError(error);
 }
 

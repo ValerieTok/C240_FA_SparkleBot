@@ -21,6 +21,41 @@ function postWebhook(webhookUrl, payload, workflowName, envName) {
     });
 }
 
+async function requestScamAnalysis({ contentType, content, notes, extractedText, uploadedImage }) {
+  const webhookUrl =
+    process.env.N8N_SCAM_ANALYSIS_WEBHOOK_URL ||
+    process.env.N8N_SCAM_DETECTOR_WEBHOOK_URL ||
+    process.env.N8N_CHECKER_WEBHOOK_URL;
+  const trimmedUrl = String(webhookUrl || "").trim();
+
+  if (!trimmedUrl) {
+    throw new Error("N8N_SCAM_ANALYSIS_WEBHOOK_URL missing.");
+  }
+
+  const response = await fetch(trimmedUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      eventType: "scam_analysis",
+      submittedAt: new Date().toISOString(),
+      source: "Scam Detector",
+      contentType,
+      content,
+      notes: notes || "",
+      extractedText: extractedText || "",
+      uploadedImage: uploadedImage || ""
+    })
+  });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    throw new Error(getWebhookErrorMessage(response.status, trimmedUrl));
+  }
+
+  return normalizeAnalysis(parseAnalysisResponse(responseText));
+}
+
 function sendHighRiskAlert(analysis, userMessage) {
   if (!isHighRiskAnalysis(analysis)) {
     return;
@@ -31,7 +66,7 @@ function sendHighRiskAlert(analysis, userMessage) {
     {
       eventType: "high_risk_alert",
       submittedAt: new Date().toISOString(),
-      source: "Message Checker",
+      source: "Scam Detector",
       riskLevel: analysis.riskLevel,
       scamType: analysis.scamType,
       redFlags: analysis.redFlags,
@@ -71,6 +106,160 @@ function sendFeedback(feedback) {
   );
 }
 
+function parseAnalysisResponse(responseText) {
+  const trimmedText = String(responseText || "").trim();
+
+  if (!trimmedText) {
+    throw new Error("n8n scam analysis returned an empty response.");
+  }
+
+  const parsed = parseJsonMaybe(trimmedText);
+  const result = Array.isArray(parsed) ? parsed[0] : parsed;
+
+  if (typeof result === "string") {
+    return parseJsonMaybe(result);
+  }
+
+  if (!result || typeof result !== "object") {
+    throw new Error("n8n scam analysis returned an unsupported response.");
+  }
+
+  const nestedAnalysis = findAnalysisObject(result);
+
+  if (nestedAnalysis) {
+    return nestedAnalysis;
+  }
+
+  const modelText =
+    result.output ||
+    result.text ||
+    result.response ||
+    result.responseText ||
+    result.response_text ||
+    result["Response Text"] ||
+    result.message ||
+    result.result ||
+    result.data?.output ||
+    result.data?.text ||
+    result.data?.response ||
+    result.data?.responseText ||
+    result.data?.response_text ||
+    result.data?.["Response Text"];
+
+  if (typeof modelText === "string") {
+    const parsedModelText = parseJsonMaybe(stripCodeFence(modelText));
+    const nestedModelAnalysis = findAnalysisObject(parsedModelText);
+
+    return nestedModelAnalysis || parsedModelText;
+  }
+
+  if (modelText && typeof modelText === "object") {
+    const nestedModelAnalysis = findAnalysisObject(modelText);
+
+    return nestedModelAnalysis || modelText;
+  }
+
+  return result;
+}
+
+function findAnalysisObject(value) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  if (hasAnalysisFields(value)) {
+    return value;
+  }
+
+  const candidates = [
+    value.analysis,
+    value.body,
+    value.json,
+    value.output,
+    value.response,
+    value.result,
+    value.data,
+    value.message,
+    value.message?.content,
+    value.choices?.[0]?.message?.content
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "string") {
+      const parsed = parseJsonMaybe(stripCodeFence(candidate));
+
+      if (parsed && typeof parsed === "object") {
+        const nested = findAnalysisObject(parsed);
+
+        if (nested) {
+          return nested;
+        }
+      }
+    }
+
+    if (candidate && typeof candidate === "object") {
+      const nested = findAnalysisObject(candidate);
+
+      if (nested) {
+        return nested;
+      }
+    }
+  }
+
+  return null;
+}
+
+function hasAnalysisFields(value) {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      (value.riskLevel || value.risk_level || value.risk) &&
+      (value.scamType || value.scam_type || value.type) &&
+      (value.recommendedAction || value.recommended_action || value.action || value.advice)
+  );
+}
+
+function parseJsonMaybe(value) {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return value;
+  }
+}
+
+function stripCodeFence(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+}
+
+function normalizeAnalysis(result) {
+  if (!result || typeof result !== "object" || !hasAnalysisFields(result)) {
+    throw new Error("n8n scam analysis response is missing required analysis fields.");
+  }
+
+  const redFlags = result.redFlags || result.red_flags || result.flags || [];
+
+  return {
+    riskLevel: String(result.riskLevel || result.risk_level || result.risk),
+    scamType: String(result.scamType || result.scam_type || result.type),
+    redFlags: Array.isArray(redFlags)
+      ? redFlags.map(String)
+      : String(redFlags || "")
+          .split(/\r?\n|,\s*/)
+          .map((flag) => flag.trim())
+          .filter(Boolean),
+    recommendedAction: String(
+      result.recommendedAction ||
+        result.recommended_action ||
+        result.action ||
+        result.advice
+    )
+  };
+}
+
 function getWebhookErrorMessage(status, webhookUrl) {
   if (status === 404 && webhookUrl.includes("/webhook-test/")) {
     return [
@@ -81,6 +270,32 @@ function getWebhookErrorMessage(status, webhookUrl) {
   }
 
   return `n8n webhook returned HTTP ${status}`;
+}
+
+function getFriendlyN8nError(error) {
+  const message = error.message || "";
+
+  if (
+    message.includes("N8N_SCAM_ANALYSIS_WEBHOOK_URL") ||
+    message.includes("N8N_SCAM_DETECTOR_WEBHOOK_URL") ||
+    message.includes("N8N_CHECKER_WEBHOOK_URL")
+  ) {
+    return "n8n scam analysis webhook is missing. Add N8N_SCAM_ANALYSIS_WEBHOOK_URL to your .env file.";
+  }
+
+  if (message.includes("webhook-test") || message.includes("HTTP 404")) {
+    return "n8n scam analysis webhook is not listening. In n8n, click 'Listen for test event' for the test URL, or use the production webhook URL with an active workflow.";
+  }
+
+  if (
+    message.includes("empty response") ||
+    message.includes("unsupported response") ||
+    message.includes("missing required analysis fields")
+  ) {
+    return "n8n did not return a usable scam analysis. Configure the workflow response to return riskLevel, scamType, redFlags, and recommendedAction.";
+  }
+
+  return "n8n scam analysis is unavailable right now. Please check the workflow and try again.";
 }
 
 function isHighRiskAnalysis(analysis) {
@@ -127,6 +342,8 @@ function stringifyAnalysis(analysis) {
 }
 
 module.exports = {
+  requestScamAnalysis,
+  getFriendlyN8nError,
   sendHighRiskAlert,
   sendScamReport,
   sendFeedback
