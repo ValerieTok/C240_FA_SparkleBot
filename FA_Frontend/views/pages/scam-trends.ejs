@@ -1,0 +1,225 @@
+<section class="dashboard-shell" aria-label="Scam trends admin analytics">
+  <header class="dashboard-header">
+    <div class="dashboard-title-block">
+      <p class="eyebrow dashboard-eyebrow">Admin Analytics</p>
+      <h1><%= page.heading %></h1>
+      <p><%= page.description %></p>
+    </div>
+    <aside class="last-updated-card" aria-label="Last updated">
+      <span>Last Updated:</span>
+      <strong><%= trends.dateGenerated %></strong>
+    </aside>
+  </header>
+
+  <div class="dashboard-grid">
+    <article class="card kpi-card kpi-primary">
+      <div class="kpi-icon" aria-hidden="true"><i class="fa-solid fa-file-shield"></i></div>
+      <span class="kpi-label">Total Reports</span>
+      <strong><%= trends.totalReports %></strong>
+      <p>Reports analysed in this summary.</p>
+    </article>
+
+    <article class="card kpi-card">
+      <div class="kpi-icon" aria-hidden="true"><i class="fa-solid fa-bullseye"></i></div>
+      <span class="kpi-label">Most Common Scam Type</span>
+      <strong><%= trends.mostCommonScamType %></strong>
+      <p>Highest frequency scam category.</p>
+    </article>
+
+    <article class="card kpi-card">
+      <div class="kpi-icon" aria-hidden="true"><i class="fa-solid fa-chart-column"></i></div>
+      <span class="kpi-label">Most Common Scam Count</span>
+      <strong><%= trends.mostCommonScamCount %></strong>
+      <p>Reports in the leading category.</p>
+    </article>
+
+    <article class="card kpi-card risk-high">
+      <div class="kpi-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <span class="kpi-label">High Risk Reports</span>
+      <strong><%= trends.highRiskReports %></strong>
+      <p>Reports marked high priority.</p>
+    </article>
+
+    <article class="card kpi-card risk-medium">
+      <div class="kpi-icon" aria-hidden="true"><i class="fa-solid fa-circle-exclamation"></i></div>
+      <span class="kpi-label">Medium Risk Reports</span>
+      <strong><%= trends.mediumRiskReports %></strong>
+      <p>Reports requiring monitoring.</p>
+    </article>
+
+    <article class="card kpi-card risk-low">
+      <div class="kpi-icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
+      <span class="kpi-label">Low Risk Reports</span>
+      <strong><%= trends.lowRiskReports %></strong>
+      <p>Reports with lower urgency.</p>
+    </article>
+
+    <article class="card analytics-panel risk-distribution-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Risk Level Distribution</h2>
+          <p>High, medium, and low risk reports.</p>
+        </div>
+        <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+      </div>
+      <div class="chart-frame doughnut-frame">
+        <canvas id="riskDistributionChart" aria-label="Risk level distribution chart" role="img"></canvas>
+      </div>
+    </article>
+
+    <article class="card analytics-panel scam-types-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Top Scam Types</h2>
+          <p>Sample distribution by scam category.</p>
+        </div>
+        <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
+      </div>
+      <div class="chart-frame">
+        <canvas id="topScamTypesChart" aria-label="Top scam types bar chart" role="img"></canvas>
+      </div>
+    </article>
+
+    <article class="card trend-summary-card">
+      <div class="panel-header">
+        <div>
+          <h2>Trend Summary</h2>
+          <p>Generated text from the processed scam trend data.</p>
+        </div>
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+      </div>
+      <div class="trend-summary-box" tabindex="0">
+        <p><%= trends.trendSummary %></p>
+      </div>
+    </article>
+
+    <article class="card recent-summary-card">
+      <div class="panel-header">
+        <div>
+          <h2>Recent Report Summary</h2>
+          <p>Latest processed summary row.</p>
+        </div>
+        <i class="fa-solid fa-table-list" aria-hidden="true"></i>
+      </div>
+      <div class="summary-table-wrap">
+        <table class="summary-table">
+          <tbody>
+            <tr>
+              <th scope="row">Date Generated</th>
+              <td><%= trends.dateGenerated %></td>
+            </tr>
+            <tr>
+              <th scope="row">Total Reports</th>
+              <td><%= trends.totalReports %></td>
+            </tr>
+            <tr>
+              <th scope="row">Most Common Scam</th>
+              <td><%= trends.mostCommonScamType %></td>
+            </tr>
+            <tr>
+              <th scope="row">High Risk Count</th>
+              <td><%= trends.highRiskReports %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  const riskBreakdownData = <%- JSON.stringify(riskBreakdown.map((risk) => ({
+    label: risk.label,
+    count: risk.count
+  }))) %>;
+
+  const topScamTypeData = [
+    { label: "<%= trends.mostCommonScamType %>", count: <%= trends.mostCommonScamCount %> },
+    { label: "Job Scam", count: 0 },
+    { label: "Investment Scam", count: 0 },
+    { label: "E-commerce Scam", count: 0 },
+    { label: "Fake Friend Scam", count: 0 }
+  ];
+
+  const chartTextColor = "#465568";
+  const chartGridColor = "#dce5ef";
+
+  new Chart(document.getElementById("riskDistributionChart"), {
+    type: "doughnut",
+    data: {
+      labels: riskBreakdownData.map((risk) => risk.label),
+      datasets: [{
+        data: riskBreakdownData.map((risk) => risk.count),
+        backgroundColor: ["#c83737", "#c7851f", "#21875b"],
+        borderColor: "#ffffff",
+        borderWidth: 4,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "68%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: chartTextColor,
+            boxWidth: 10,
+            usePointStyle: true,
+            padding: 18
+          }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById("topScamTypesChart"), {
+    type: "bar",
+    data: {
+      labels: topScamTypeData.map((scam) => scam.label),
+      datasets: [{
+        label: "Reports",
+        data: topScamTypeData.map((scam) => scam.count),
+        backgroundColor: "#2878d8",
+        borderColor: "#1c5fb8",
+        borderWidth: 1,
+        borderRadius: 8,
+        maxBarThickness: 42
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            color: chartTextColor,
+            font: {
+              weight: 700
+            }
+          }
+        },
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: chartGridColor
+          },
+          ticks: {
+            precision: 0,
+            color: chartTextColor
+          }
+        }
+      }
+    }
+  });
+</script>

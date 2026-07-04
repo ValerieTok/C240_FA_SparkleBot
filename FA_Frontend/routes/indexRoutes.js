@@ -8,6 +8,7 @@ const chatbotController = require("../controllers/chatbotController");
 const aboutController = require("../controllers/aboutController");
 const reportController = require("../controllers/reportController");
 const feedbackController = require("../controllers/feedbackController");
+const scamTrendsController = require("../controllers/scamTrendsController");
 
 const router = express.Router();
 const uploadDirectory = path.join(__dirname, "..", "public", "uploads");
@@ -57,6 +58,7 @@ router.post("/checker", (req, res) => {
 router.get("/chatbot", chatbotController.showChatbot);
 router.get("/report-scam", reportController.showReport);
 router.post("/report-scam", reportController.submitReport);
+router.get("/admin/scam-trends", scamTrendsController.showDashboard);
 router.get("/feedback", feedbackController.showFeedback);
 router.post("/feedback", feedbackController.submitFeedback);
 router.get("/about", aboutController.showAbout);
