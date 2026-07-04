@@ -241,6 +241,18 @@ function normalizeAnalysis(result) {
   }
 
   const redFlags = result.redFlags || result.red_flags || result.flags || [];
+  const rawScore =
+    result.score ??
+    result.finalScore ??
+    result.final_score ??
+    result.aiRiskScore ??
+    result.ai_risk_score;
+  const score = Number(rawScore);
+  const rawIsScam =
+    result.isScam ??
+    result.is_scam ??
+    result.finalIsScam ??
+    result.final_is_scam;
 
   return {
     riskLevel: String(result.riskLevel || result.risk_level || result.risk),
@@ -256,7 +268,12 @@ function normalizeAnalysis(result) {
         result.recommended_action ||
         result.action ||
         result.advice
-    )
+    ),
+    score: Number.isFinite(score) ? score : null,
+    isScam:
+      typeof rawIsScam === "boolean"
+        ? rawIsScam
+        : String(rawIsScam || "").toLowerCase() === "true"
   };
 }
 

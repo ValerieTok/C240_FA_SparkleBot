@@ -96,6 +96,14 @@
             <dd><%= analysis.riskLevel %></dd>
           </div>
           <div>
+            <dt>Scam Score</dt>
+            <dd><%= analysis.score === null || analysis.score === undefined ? "Not returned" : `${analysis.score}/100` %></dd>
+          </div>
+          <div>
+            <dt>Scam Detected</dt>
+            <dd><%= analysis.isScam ? "Yes" : "No" %></dd>
+          </div>
+          <div>
             <dt>Possible Scam Type</dt>
             <dd><%= analysis.scamType %></dd>
           </div>
