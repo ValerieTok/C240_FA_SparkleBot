@@ -10,6 +10,7 @@
       id="sparklebot-webchat"
       class="webchat-box"
       data-bot-name="<%= botpress.botName %>"
+      data-handoff-prompt="<%= scamContext ? scamContext.prompt : '' %>"
     >
       <div class="webchat-loading">
         <p>Loading SparkleBot...</p>
@@ -18,6 +19,39 @@
   </article>
 
   <aside class="card">
+    <% if (scamContext) { %>
+      <section class="chatbot-handoff">
+        <h2>Scam Context</h2>
+        <dl class="result-list">
+          <div>
+            <dt>Risk Level</dt>
+            <dd><%= scamContext.riskLevel %></dd>
+          </div>
+          <% if (scamContext.score) { %>
+            <div>
+              <dt>Score</dt>
+              <dd><%= scamContext.score %>/100</dd>
+            </div>
+          <% } %>
+          <div>
+            <dt>Possible Scam Type</dt>
+            <dd><%= scamContext.scamType %></dd>
+          </div>
+          <div>
+            <dt>Red Flags</dt>
+            <dd><%= scamContext.redFlags || "None returned" %></dd>
+          </div>
+          <div>
+            <dt>Recommended Action</dt>
+            <dd><%= scamContext.recommendedAction || "None returned" %></dd>
+          </div>
+        </dl>
+        <div class="result-actions">
+          <button class="btn btn-secondary" type="button" data-copy-handoff>Copy context</button>
+        </div>
+      </section>
+    <% } %>
+
     <h2>Example Questions</h2>
     <ul class="check-list">
       <% questions.forEach((question) => { %>

@@ -259,6 +259,11 @@ h1 {
   gap: 18px;
 }
 
+.home-feature-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .card,
 .form-card,
 .chatbot-panel {
@@ -547,6 +552,24 @@ h1 {
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
+.home-feature-grid .feature-card {
+  min-height: 230px;
+  padding: 16px;
+}
+
+.home-feature-grid .feature-card h3 {
+  font-size: 1.08rem;
+}
+
+.home-feature-grid .feature-card p {
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.home-feature-grid .text-link {
+  font-size: 0.92rem;
+}
+
 .feature-card:hover,
 .feature-card:focus-visible {
   transform: translateY(-3px);
@@ -769,6 +792,13 @@ h1 {
   border-bottom: 0;
 }
 
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
 .loading-spinner.idle {
   border-color: var(--grey-200);
   border-top-color: #b3bfce;
@@ -794,6 +824,16 @@ h1 {
 
 .chatbot-panel .webchat-box {
   flex: 1;
+}
+
+.chatbot-handoff {
+  margin-bottom: 24px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--grey-200);
+}
+
+.chatbot-handoff .result-list {
+  margin-bottom: 0;
 }
 
 label {
@@ -951,6 +991,10 @@ textarea {
 }
 
 @media (max-width: 1120px) {
+  .home-feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .dashboard-header {
     flex-direction: column;
   }
@@ -982,6 +1026,10 @@ textarea {
 }
 
 @media (max-width: 760px) {
+  .home-feature-grid {
+    grid-template-columns: 1fr;
+  }
+
   .navbar {
     align-items: flex-start;
     flex-wrap: wrap;

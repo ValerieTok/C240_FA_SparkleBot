@@ -14,6 +14,7 @@ function renderCheckerPage(res, options = {}) {
     uploadedImage: options.uploadedImage || null,
     extractedText: options.extractedText || "",
     analysis: options.analysis || null,
+    chatbotHandoffUrl: options.chatbotHandoffUrl || null,
     errorMessage: options.errorMessage || null,
     body: "pages/checker"
   });
@@ -93,7 +94,8 @@ async function analyzeText(req, res, notes) {
     activeMode: "text",
     submittedMessage,
     notes,
-    analysis
+    analysis,
+    chatbotHandoffUrl: buildChatbotHandoffUrl(analysis, analysisInput)
   });
 }
 
@@ -122,7 +124,8 @@ async function analyzeUrl(req, res, notes) {
     activeMode: "url",
     submittedUrl,
     notes,
-    analysis
+    analysis,
+    chatbotHandoffUrl: buildChatbotHandoffUrl(analysis, analysisInput)
   });
 }
 
@@ -154,8 +157,26 @@ async function analyzeImage(req, res, notes) {
     uploadedImage,
     extractedText,
     notes,
-    analysis
+    analysis,
+    chatbotHandoffUrl: buildChatbotHandoffUrl(analysis, analysisInput)
   });
+}
+
+function buildChatbotHandoffUrl(analysis, submittedContent) {
+  if (!analysis || !analysis.isScam) {
+    return null;
+  }
+
+  const params = new URLSearchParams({
+    riskLevel: analysis.riskLevel || "unknown",
+    score: analysis.score === null || analysis.score === undefined ? "" : String(analysis.score),
+    scamType: analysis.scamType || "unknown",
+    redFlags: Array.isArray(analysis.redFlags) ? analysis.redFlags.join(", ") : String(analysis.redFlags || ""),
+    recommendedAction: analysis.recommendedAction || "",
+    message: String(submittedContent || "").slice(0, 1200)
+  });
+
+  return `/chatbot?${params.toString()}`;
 }
 
 function getFriendlyAnalysisError(error) {
