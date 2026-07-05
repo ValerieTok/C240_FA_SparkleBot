@@ -1,3 +1,5 @@
+const fs = require("fs/promises");
+
 function postWebhook(webhookUrl, payload, workflowName, envName) {
   const trimmedUrl = String(webhookUrl || "").trim();
 
@@ -46,7 +48,17 @@ async function requestWebhook(webhookUrl, payload, workflowName, envName) {
   };
 }
 
-async function requestScamAnalysis({ contentType, content, notes, extractedText, uploadedImage }) {
+async function requestScamAnalysis({
+  checkType,
+  contentType,
+  content,
+  message,
+  url,
+  notes,
+  extractedText,
+  uploadedImage,
+  imageFile
+}) {
   const webhookUrl =
     process.env.N8N_SCAM_ANALYSIS_WEBHOOK_URL ||
     process.env.N8N_SCAM_DETECTOR_WEBHOOK_URL ||
@@ -57,20 +69,27 @@ async function requestScamAnalysis({ contentType, content, notes, extractedText,
     throw new Error("N8N_SCAM_ANALYSIS_WEBHOOK_URL missing.");
   }
 
-  const response = await fetch(trimmedUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      eventType: "scam_analysis",
-      submittedAt: new Date().toISOString(),
-      source: "Scam Detector",
-      contentType,
-      content,
-      notes: notes || "",
-      extractedText: extractedText || "",
-      uploadedImage: uploadedImage || ""
-    })
-  });
+  const payload = {
+    eventType: "scam_analysis",
+    submittedAt: new Date().toISOString(),
+    source: "Scam Detector",
+    checkType: checkType || contentType,
+    contentType,
+    content: content || "",
+    message: message || "",
+    url: url || "",
+    notes: notes || "",
+    extractedText: extractedText || "",
+    uploadedImage: uploadedImage || ""
+  };
+
+  const response = imageFile
+    ? await postImageAnalysisRequest(trimmedUrl, payload, imageFile)
+    : await fetch(trimmedUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
   const responseText = await response.text();
 
@@ -79,6 +98,25 @@ async function requestScamAnalysis({ contentType, content, notes, extractedText,
   }
 
   return normalizeAnalysis(parseAnalysisResponse(responseText));
+}
+
+async function postImageAnalysisRequest(webhookUrl, payload, imageFile) {
+  const formData = new FormData();
+  const fileBuffer = await fs.readFile(imageFile.path);
+  const imageBlob = new Blob([fileBuffer], {
+    type: imageFile.mimetype || "application/octet-stream"
+  });
+
+  Object.entries(payload).forEach(([key, value]) => {
+    formData.append(key, String(value || ""));
+  });
+
+  formData.append("screenshot", imageBlob, imageFile.originalname || imageFile.filename || "screenshot");
+
+  return fetch(webhookUrl, {
+    method: "POST",
+    body: formData
+  });
 }
 
 function sendHighRiskAlert(analysis, userMessage) {
@@ -284,6 +322,7 @@ function normalizeAnalysis(result) {
     result.finalIsScam ??
     result.final_is_scam;
   const isScam = normalizeIsScam(rawIsScam, riskLevel, score);
+  const extractedText = normalizeExtractedText(result);
 
   return {
     riskLevel,
@@ -300,9 +339,39 @@ function normalizeAnalysis(result) {
         result.action ||
         result.advice
     ),
+    extractedText,
+    message: String(result.message || result.content || extractedText || ""),
+    contentType: String(result.contentType || result.content_type || result.checkType || result.check_type || ""),
+    source: String(result.source || ""),
     score,
     isScam
   };
+}
+
+function normalizeExtractedText(result) {
+  const value =
+    result.extractedText ??
+    result.extracted_text ??
+    result.ocrText ??
+    result.ocr_text ??
+    result.imageText ??
+    result.image_text ??
+    result.textFromImage ??
+    result.text_from_image ??
+    result.extracted ??
+    result.message ??
+    result.content ??
+    result.text;
+
+  if (Array.isArray(value)) {
+    return value.map(String).join("\n").trim();
+  }
+
+  if (value && typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value || "").trim();
 }
 
 function normalizeRiskLevel(value) {

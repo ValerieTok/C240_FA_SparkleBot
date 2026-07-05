@@ -8,7 +8,7 @@ const pages = {
   checker: {
     heading: "Scam Detector",
     description:
-      "Paste suspicious text, check a URL, or upload a screenshot. Gemini extracts text from images, then your n8n workflow reviews the content for scam risk, red flags, and safer next steps."
+      "Paste suspicious text, check a URL, or upload a screenshot. The n8n workflow extracts image text, reviews the content for scam risk, and returns red flags with safer next steps."
   },
   chatbot: {
     heading: "AI Chatbot",

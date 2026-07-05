@@ -1,5 +1,4 @@
 const pageModel = require("../models/pageModel");
-const geminiService = require("../services/geminiService");
 const n8nService = require("../services/n8nService");
 
 function renderCheckerPage(res, options = {}) {
@@ -83,8 +82,10 @@ async function analyzeText(req, res, notes) {
 
   const analysisInput = buildAnalysisInput(submittedMessage, notes);
   const analysis = await n8nService.requestScamAnalysis({
+    checkType: "text",
     contentType: "text",
     content: analysisInput,
+    message: submittedMessage,
     notes
   });
 
@@ -113,8 +114,10 @@ async function analyzeUrl(req, res, notes) {
 
   const analysisInput = buildAnalysisInput(submittedUrl, notes);
   const analysis = await n8nService.requestScamAnalysis({
+    checkType: "url",
     contentType: "url",
     content: analysisInput,
+    url: submittedUrl,
     notes
   });
 
@@ -140,17 +143,21 @@ async function analyzeImage(req, res, notes) {
   }
 
   const uploadedImage = `/uploads/${req.file.filename}`;
-  const extractedText = await geminiService.extractTextFromImage(req.file.path, req.file.mimetype);
-  const analysisInput = buildAnalysisInput(`Text extracted from uploaded image:\n${extractedText}`, notes);
   const analysis = await n8nService.requestScamAnalysis({
+    checkType: "image",
     contentType: "image",
-    content: analysisInput,
+    content: notes,
     notes,
-    extractedText,
-    uploadedImage
+    uploadedImage,
+    imageFile: req.file
   });
+  const extractedText = analysis.extractedText || analysis.message || analysis.content || "";
+  const alertContent = buildAnalysisInput(
+    extractedText ? `Text extracted from uploaded image:\n${extractedText}` : "Uploaded image submitted for scam analysis.",
+    notes
+  );
 
-  n8nService.sendHighRiskAlert(analysis, analysisInput);
+  n8nService.sendHighRiskAlert(analysis, alertContent);
 
   renderCheckerPage(res, {
     activeMode: "image",
@@ -193,12 +200,6 @@ function isHighRiskAnalysis(analysis) {
 }
 
 function getFriendlyAnalysisError(error) {
-  const message = error.message || "";
-
-  if (message.includes("Gemini") || message.includes("GEMINI_API_KEY")) {
-    return geminiService.getFriendlyGeminiError(error);
-  }
-
   return n8nService.getFriendlyN8nError(error);
 }
 
