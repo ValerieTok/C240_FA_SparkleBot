@@ -10,7 +10,6 @@
       id="sparklebot-webchat"
       class="webchat-box"
       data-bot-name="<%= botpress.botName %>"
-      data-handoff-prompt="<%= scamContext ? scamContext.prompt : '' %>"
     >
       <div class="webchat-loading">
         <p>Loading SparkleBot...</p>
@@ -46,9 +45,6 @@
             <dd><%= scamContext.recommendedAction || "None returned" %></dd>
           </div>
         </dl>
-        <div class="result-actions">
-          <button class="btn btn-secondary" type="button" data-copy-handoff>Copy context</button>
-        </div>
       </section>
     <% } %>
 

@@ -5,8 +5,6 @@
     return;
   }
 
-  const handoffPrompt = webchat.dataset.handoffPrompt || "";
-
   function showError(message) {
     webchat.innerHTML = "";
 
@@ -27,9 +25,7 @@
 
     const note = document.createElement("p");
     note.className = "form-note";
-    note.textContent = handoffPrompt
-      ? "Open SparkleBot, then paste the copied scam context to continue the guidance."
-      : "Use the chat button on this page to start a conversation.";
+    note.textContent = "Use the chat button on this page to start a conversation.";
 
     const button = document.createElement("button");
     button.type = "button";
@@ -44,37 +40,8 @@
     ready.appendChild(message);
     ready.appendChild(note);
 
-    if (handoffPrompt) {
-      const copyButton = document.createElement("button");
-      copyButton.type = "button";
-      copyButton.className = "btn btn-secondary";
-      copyButton.textContent = "Copy scam context";
-      copyButton.addEventListener("click", copyHandoffPrompt);
-      ready.appendChild(copyButton);
-    }
-
     ready.appendChild(button);
     webchat.appendChild(ready);
-  }
-
-  async function copyHandoffPrompt() {
-    if (!handoffPrompt) {
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(handoffPrompt);
-    } catch (error) {
-      const textArea = document.createElement("textarea");
-      textArea.value = handoffPrompt;
-      textArea.setAttribute("readonly", "");
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      textArea.remove();
-    }
   }
 
   function waitForBotpress() {
@@ -105,8 +72,4 @@
   }
 
   initBotpress();
-
-  document.querySelectorAll("[data-copy-handoff]").forEach((button) => {
-    button.addEventListener("click", copyHandoffPrompt);
-  });
 })();

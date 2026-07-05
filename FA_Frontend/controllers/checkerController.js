@@ -95,7 +95,7 @@ async function analyzeText(req, res, notes) {
     submittedMessage,
     notes,
     analysis,
-    chatbotHandoffUrl: buildChatbotHandoffUrl(analysis, analysisInput)
+    chatbotHandoffUrl: buildChatbotHandoffUrl(analysis)
   });
 }
 
@@ -125,7 +125,7 @@ async function analyzeUrl(req, res, notes) {
     submittedUrl,
     notes,
     analysis,
-    chatbotHandoffUrl: buildChatbotHandoffUrl(analysis, analysisInput)
+    chatbotHandoffUrl: buildChatbotHandoffUrl(analysis)
   });
 }
 
@@ -158,12 +158,12 @@ async function analyzeImage(req, res, notes) {
     extractedText,
     notes,
     analysis,
-    chatbotHandoffUrl: buildChatbotHandoffUrl(analysis, analysisInput)
+    chatbotHandoffUrl: buildChatbotHandoffUrl(analysis)
   });
 }
 
-function buildChatbotHandoffUrl(analysis, submittedContent) {
-  if (!analysis || !analysis.isScam) {
+function buildChatbotHandoffUrl(analysis) {
+  if (!isHighRiskAnalysis(analysis)) {
     return null;
   }
 
@@ -172,11 +172,24 @@ function buildChatbotHandoffUrl(analysis, submittedContent) {
     score: analysis.score === null || analysis.score === undefined ? "" : String(analysis.score),
     scamType: analysis.scamType || "unknown",
     redFlags: Array.isArray(analysis.redFlags) ? analysis.redFlags.join(", ") : String(analysis.redFlags || ""),
-    recommendedAction: analysis.recommendedAction || "",
-    message: String(submittedContent || "").slice(0, 1200)
+    recommendedAction: analysis.recommendedAction || ""
   });
 
   return `/chatbot?${params.toString()}`;
+}
+
+function isHighRiskAnalysis(analysis) {
+  if (!analysis || typeof analysis !== "object") {
+    return false;
+  }
+
+  const riskLevel = String(analysis.riskLevel || "").trim().toLowerCase();
+
+  if (riskLevel === "high") {
+    return true;
+  }
+
+  return typeof analysis.score === "number" && analysis.score >= 70;
 }
 
 function getFriendlyAnalysisError(error) {
