@@ -21,6 +21,31 @@ function postWebhook(webhookUrl, payload, workflowName, envName) {
     });
 }
 
+async function requestWebhook(webhookUrl, payload, workflowName, envName) {
+  const trimmedUrl = String(webhookUrl || "").trim();
+
+  if (!trimmedUrl) {
+    throw new Error(`${envName} missing.`);
+  }
+
+  const response = await fetch(trimmedUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    throw new Error(getWebhookErrorMessage(response.status, trimmedUrl));
+  }
+
+  return parseJsonMaybe(responseText) || {
+    success: true,
+    message: `${workflowName} submitted successfully.`
+  };
+}
+
 async function requestScamAnalysis({ contentType, content, notes, extractedText, uploadedImage }) {
   const webhookUrl =
     process.env.N8N_SCAM_ANALYSIS_WEBHOOK_URL ||
@@ -78,8 +103,8 @@ function sendHighRiskAlert(analysis, userMessage) {
   );
 }
 
-function sendScamReport(report) {
-  postWebhook(
+function submitScamReport(report) {
+  return requestWebhook(
     process.env.N8N_SCAM_REPORT_WEBHOOK_URL,
     {
       eventType: "scam_report",
@@ -315,6 +340,20 @@ function getFriendlyN8nError(error) {
   return "n8n scam analysis is unavailable right now. Please check the workflow and try again.";
 }
 
+function getFriendlyReportError(error) {
+  const message = error.message || "";
+
+  if (message.includes("N8N_SCAM_REPORT_WEBHOOK_URL")) {
+    return "n8n scam report webhook is missing. Add N8N_SCAM_REPORT_WEBHOOK_URL to your .env file.";
+  }
+
+  if (message.includes("webhook-test") || message.includes("HTTP 404")) {
+    return "n8n scam report webhook is not listening. Use the production webhook URL with an active workflow, or click 'Listen for test event' in n8n.";
+  }
+
+  return "n8n scam report workflow is unavailable right now. Please check the workflow and try again.";
+}
+
 function isHighRiskAnalysis(analysis) {
   const riskLevel = getAnalysisValue(analysis, "riskLevel").toLowerCase();
 
@@ -361,7 +400,8 @@ function stringifyAnalysis(analysis) {
 module.exports = {
   requestScamAnalysis,
   getFriendlyN8nError,
+  getFriendlyReportError,
   sendHighRiskAlert,
-  sendScamReport,
+  submitScamReport,
   sendFeedback
 };

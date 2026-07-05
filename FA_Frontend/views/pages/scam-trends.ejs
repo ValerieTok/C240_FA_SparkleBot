@@ -8,8 +8,16 @@
     <aside class="last-updated-card" aria-label="Last updated">
       <span>Last Updated:</span>
       <strong><%= trends.dateGenerated %></strong>
+      <small data-refresh-countdown>Refreshes in 30s</small>
     </aside>
   </header>
+
+  <% if (trendsError) { %>
+    <article class="result-card" role="alert">
+      <h2>Dashboard Data Unavailable</h2>
+      <p><%= trendsError %></p>
+    </article>
+  <% } %>
 
   <div class="dashboard-grid">
     <article class="card kpi-card kpi-primary">
@@ -129,18 +137,28 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
+  const refreshCountdown = document.querySelector("[data-refresh-countdown]");
+  let secondsUntilRefresh = 30;
+
+  const refreshTimer = setInterval(() => {
+    secondsUntilRefresh -= 1;
+
+    if (refreshCountdown) {
+      refreshCountdown.textContent = `Refreshes in ${secondsUntilRefresh}s`;
+    }
+
+    if (secondsUntilRefresh <= 0) {
+      clearInterval(refreshTimer);
+      window.location.reload();
+    }
+  }, 1000);
+
   const riskBreakdownData = <%- JSON.stringify(riskBreakdown.map((risk) => ({
     label: risk.label,
     count: risk.count
   }))) %>;
 
-  const topScamTypeData = [
-    { label: "<%= trends.mostCommonScamType %>", count: <%= trends.mostCommonScamCount %> },
-    { label: "Job Scam", count: 0 },
-    { label: "Investment Scam", count: 0 },
-    { label: "E-commerce Scam", count: 0 },
-    { label: "Fake Friend Scam", count: 0 }
-  ];
+  const topScamTypeData = <%- JSON.stringify(trends.topScamTypes || []) %>;
 
   const chartTextColor = "#465568";
   const chartGridColor = "#dce5ef";

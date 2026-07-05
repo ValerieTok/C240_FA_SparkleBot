@@ -17,7 +17,7 @@ exports.showReport = (req, res) => {
   renderReportPage(res);
 };
 
-exports.submitReport = (req, res) => {
+exports.submitReport = async (req, res) => {
   const scamType = String(req.body.scamType || "").trim();
   const platform = String(req.body.platform || "").trim();
   const message = String(req.body.message || "").trim();
@@ -36,14 +36,28 @@ exports.submitReport = (req, res) => {
     return;
   }
 
-  n8nService.sendScamReport({
-    scamType,
-    platform,
-    message,
-    contact: contact || "Not provided"
-  });
+  try {
+    const result = await n8nService.submitScamReport({
+      scamType,
+      platform,
+      message,
+      contact: contact || "Not provided"
+    });
 
-  renderReportPage(res, {
-    reportMessage: "Your scam report was submitted for review."
-  });
+    renderReportPage(res, {
+      reportMessage: result.message || "Your scam report was submitted for review."
+    });
+  } catch (error) {
+    console.error("Scam report submission failed:", error.message);
+
+    renderReportPage(res, {
+      reportError: n8nService.getFriendlyReportError(error),
+      values: {
+        scamType,
+        platform,
+        message,
+        contact
+      }
+    });
+  }
 };
