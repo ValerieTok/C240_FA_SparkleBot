@@ -12,6 +12,43 @@ const modeTabs = document.querySelector("[data-mode-tabs]");
 const resultPanels = document.querySelectorAll("[data-result-panel]");
 const emptyResults = document.querySelector("[data-empty-results]");
 
+function clearDetectorInputs() {
+  const messageInput = document.getElementById("messageInput");
+  const urlInput = document.getElementById("urlInput");
+  const notesInput = document.getElementById("notesInput");
+  const preview = document.getElementById("screenshotPreview");
+  const previewCard = document.getElementById("screenshotPreviewCard");
+
+  [messageInput, urlInput, notesInput].forEach((field) => {
+    if (field) {
+      field.value = "";
+    }
+  });
+
+  if (screenshotInput) {
+    screenshotInput.value = "";
+  }
+
+  if (preview) {
+    preview.removeAttribute("src");
+  }
+
+  if (previewCard) {
+    previewCard.classList.add("hidden");
+  }
+}
+
+function clearDetectorResults() {
+  resultPanels.forEach((panel) => {
+    panel.dataset.hasResult = "false";
+    panel.classList.add("hidden");
+  });
+
+  if (emptyResults) {
+    emptyResults.classList.remove("hidden");
+  }
+}
+
 function updateResultPanels(activeMode) {
   let hasVisibleResult = false;
 
@@ -53,6 +90,9 @@ if (modeTabs) {
     const input = label.querySelector('input[type="radio"]');
 
     input.addEventListener("change", () => {
+      clearDetectorInputs();
+      clearDetectorResults();
+
       tabLabels.forEach((candidate) => {
         candidate.classList.toggle("active", candidate === label);
       });
