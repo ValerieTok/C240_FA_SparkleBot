@@ -4,7 +4,7 @@
 </section>
 
 <section class="tool-panel report-layout">
-  <form class="form-card report-page-card" action="/report-scam" method="POST">
+  <form class="form-card report-page-card" action="/report-scam" method="POST" data-report-form>
     <% if (reportMessage) { %>
       <p class="form-status success"><%= reportMessage %></p>
     <% } %>
@@ -53,5 +53,9 @@
     >
 
     <button class="btn btn-primary" type="submit">Submit Report</button>
+    <div class="analysis-loading hidden" data-report-loading role="status" aria-live="polite">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <span>Submitting report...</span>
+    </div>
   </form>
 </section>

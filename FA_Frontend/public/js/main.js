@@ -89,3 +89,21 @@ document.querySelectorAll("[data-analysis-form]").forEach((form) => {
     }
   });
 });
+
+document.querySelectorAll("[data-report-form]").forEach((form) => {
+  form.addEventListener("submit", () => {
+    const submitButton = form.querySelector('button[type="submit"]');
+    const loadingIndicator = form.querySelector("[data-report-loading]");
+
+    form.setAttribute("aria-busy", "true");
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting...";
+    }
+
+    if (loadingIndicator) {
+      loadingIndicator.classList.remove("hidden");
+    }
+  });
+});

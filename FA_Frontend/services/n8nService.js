@@ -266,21 +266,27 @@ function normalizeAnalysis(result) {
   }
 
   const redFlags = result.redFlags || result.red_flags || result.flags || [];
+  const riskLevel = normalizeRiskLevel(result.riskLevel || result.risk_level || result.risk);
   const rawScore =
     result.score ??
     result.finalScore ??
     result.final_score ??
+    result.riskScore ??
+    result.risk_score ??
+    result.finalRiskScore ??
+    result.final_risk_score ??
     result.aiRiskScore ??
     result.ai_risk_score;
-  const score = Number(rawScore);
+  const score = normalizeScore(rawScore, riskLevel);
   const rawIsScam =
     result.isScam ??
     result.is_scam ??
     result.finalIsScam ??
     result.final_is_scam;
+  const isScam = normalizeIsScam(rawIsScam, riskLevel, score);
 
   return {
-    riskLevel: String(result.riskLevel || result.risk_level || result.risk),
+    riskLevel,
     scamType: String(result.scamType || result.scam_type || result.type),
     redFlags: Array.isArray(redFlags)
       ? redFlags.map(String)
@@ -294,12 +300,67 @@ function normalizeAnalysis(result) {
         result.action ||
         result.advice
     ),
-    score: Number.isFinite(score) ? score : null,
-    isScam:
-      typeof rawIsScam === "boolean"
-        ? rawIsScam
-        : String(rawIsScam || "").toLowerCase() === "true"
+    score,
+    isScam
   };
+}
+
+function normalizeRiskLevel(value) {
+  const riskLevel = String(value || "").trim().toLowerCase();
+
+  if (riskLevel.includes("high")) {
+    return "High";
+  }
+
+  if (riskLevel.includes("medium") || riskLevel.includes("moderate")) {
+    return "Medium";
+  }
+
+  if (riskLevel.includes("low")) {
+    return "Low";
+  }
+
+  return String(value || "Unknown").trim() || "Unknown";
+}
+
+function normalizeScore(value, riskLevel) {
+  const score = Number(value);
+
+  if (Number.isFinite(score)) {
+    return Math.max(0, Math.min(100, Math.round(score)));
+  }
+
+  if (riskLevel === "High") {
+    return 85;
+  }
+
+  if (riskLevel === "Medium") {
+    return 55;
+  }
+
+  if (riskLevel === "Low") {
+    return 20;
+  }
+
+  return null;
+}
+
+function normalizeIsScam(value, riskLevel, score) {
+  if (typeof value === "boolean") {
+    return value || riskLevel === "High" || score >= 70;
+  }
+
+  const text = String(value || "").trim().toLowerCase();
+
+  if (["true", "yes", "scam", "likely"].includes(text)) {
+    return true;
+  }
+
+  if (["false", "no", "not scam", "unlikely"].includes(text)) {
+    return riskLevel === "High" || score >= 70;
+  }
+
+  return riskLevel === "High" || score >= 70;
 }
 
 function getWebhookErrorMessage(status, webhookUrl) {
