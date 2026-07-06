@@ -39,6 +39,10 @@ async function requestWebhook(webhookUrl, payload, workflowName, envName) {
   const responseText = await response.text();
 
   if (!response.ok) {
+    if (responseText) {
+      console.error(`n8n ${workflowName} error response:`, responseText);
+    }
+
     throw new Error(getWebhookErrorMessage(response.status, trimmedUrl));
   }
 
@@ -94,6 +98,10 @@ async function requestScamAnalysis({
   const responseText = await response.text();
 
   if (!response.ok) {
+    if (responseText) {
+      console.error("n8n scam analysis error response:", responseText);
+    }
+
     throw new Error(getWebhookErrorMessage(response.status, trimmedUrl));
   }
 

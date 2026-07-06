@@ -146,7 +146,7 @@ async function analyzeImage(req, res, notes) {
   const analysis = await n8nService.requestScamAnalysis({
     checkType: "image",
     contentType: "image",
-    content: notes,
+    content: buildAnalysisInput("Uploaded image submitted for scam analysis.", notes),
     notes,
     uploadedImage,
     imageFile: req.file
