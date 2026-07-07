@@ -1,0 +1,45 @@
+<section class="page-hero compact">
+  <h1><%= page.heading %></h1>
+  <p><%= page.description %></p>
+</section>
+
+<section class="tool-panel">
+  <form class="form-card" action="/upload" method="POST" enctype="multipart/form-data" data-analysis-form>
+    <label for="screenshotInput">Upload screenshot image</label>
+    <input id="screenshotInput" name="screenshot" type="file" accept="image/*" required>
+    <button class="btn btn-primary" type="submit">Analyze Screenshot</button>
+    <div class="analysis-loading hidden" data-analysis-loading role="status" aria-live="polite">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <span>Reading and analyzing screenshot… This may take a few seconds.</span>
+    </div>
+  </form>
+
+  <% if (errorMessage) { %>
+    <article class="result-card">
+      <h2>Analysis Error</h2>
+      <p><%= errorMessage %></p>
+    </article>
+  <% } %>
+
+  <article class="preview-card <%= uploadedImage ? '' : 'hidden' %>" id="screenshotPreviewCard">
+    <h2>Screenshot Preview</h2>
+    <img id="screenshotPreview" src="<%= uploadedImage || '' %>" alt="Uploaded scam screenshot preview">
+  </article>
+
+  <% if (extractedText) { %>
+    <article class="result-card" aria-live="polite">
+      <h2>Extracted Text</h2>
+      <p><%= extractedText %></p>
+    </article>
+  <% } %>
+
+  <% if (analysis) { %>
+    <article class="result-card" aria-live="polite">
+      <h2>Scam Risk Analysis</h2>
+      <p><strong>Risk Level:</strong> <%= analysis.riskLevel %></p>
+      <p><strong>Possible Scam Type:</strong> <%= analysis.scamType %></p>
+      <p><strong>Red Flags:</strong> <%= analysis.redFlags.join(", ") %></p>
+      <p><strong>Recommended Action:</strong> <%= analysis.recommendedAction %></p>
+    </article>
+  <% } %>
+</section>
