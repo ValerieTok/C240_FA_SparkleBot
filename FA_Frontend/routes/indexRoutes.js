@@ -9,6 +9,7 @@ const aboutController = require("../controllers/aboutController");
 const reportController = require("../controllers/reportController");
 const feedbackController = require("../controllers/feedbackController");
 const scamTrendsController = require("../controllers/scamTrendsController");
+const digitalTwinController = require("../controllers/digitalTwinController");
 
 const router = express.Router();
 const uploadDirectory = path.join(__dirname, "..", "public", "uploads");
@@ -56,6 +57,7 @@ router.post("/checker", (req, res) => {
   });
 });
 router.get("/chatbot", chatbotController.showChatbot);
+router.get("/digital-twin", digitalTwinController.showPage);
 router.get("/report-scam", reportController.showReport);
 router.post("/report-scam", reportController.submitReport);
 router.get("/admin/scam-trends", scamTrendsController.showDashboard);

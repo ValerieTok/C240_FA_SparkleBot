@@ -1,0 +1,533 @@
+<section class="page-hero compact">
+  <h1>AI Digital Twin Scam Simulator</h1>
+  <p>Answer a short questionnaire to generate a scam persona and practice scenario based on your online habits.</p>
+</section>
+
+<section class="tool-panel detector-layout digital-twin-layout">
+  <form class="form-card detector-card digital-twin-card" data-digital-twin-form>
+    <p class="form-note">Testing note: Start the n8n webhook listener before submitting.</p>
+
+    <div class="question-grid">
+      <div>
+        <label for="ageGroup">Age group</label>
+        <select id="ageGroup" name="ageGroup" required>
+          <option value="">Choose an option</option>
+          <option value="student">Student</option>
+          <option value="working adult">Working adult</option>
+          <option value="senior">Senior</option>
+          <option value="general user">General user</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="onlineShopping">How often do you shop online?</label>
+        <select id="onlineShopping" name="onlineShopping" required>
+          <option value="">Choose an option</option>
+          <option value="often">Often</option>
+          <option value="sometimes">Sometimes</option>
+          <option value="rarely">Rarely</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="respondsToUrgency">Do urgent messages make you respond quickly?</label>
+        <select id="respondsToUrgency" name="respondsToUrgency" required>
+          <option value="">Choose an option</option>
+          <option value="yes">Yes</option>
+          <option value="sometimes">Sometimes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="interestedInJobs">Are you interested in online job offers?</label>
+        <select id="interestedInJobs" name="interestedInJobs" required>
+          <option value="">Choose an option</option>
+          <option value="yes">Yes</option>
+          <option value="sometimes">Sometimes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="checksLinks">Do you check links before clicking?</label>
+        <select id="checksLinks" name="checksLinks" required>
+          <option value="">Choose an option</option>
+          <option value="always">Always</option>
+          <option value="sometimes">Sometimes</option>
+          <option value="rarely">Rarely</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="investmentInterest">Interest in investment opportunities</label>
+        <select id="investmentInterest" name="investmentInterest" required>
+          <option value="">Choose an option</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Generate My Scam Persona</button>
+    <div class="analysis-loading hidden" data-digital-twin-loading role="status" aria-live="polite">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <span>Generating your scam persona...</span>
+    </div>
+  </form>
+
+  <aside class="results-panel" aria-live="polite">
+    <article class="empty-results" data-digital-twin-empty>
+      <span class="loading-spinner idle" aria-hidden="true"></span>
+      <p>Your AI digital twin result will appear here</p>
+    </article>
+
+    <article class="result-card hidden" data-digital-twin-result>
+      <h2>Scam Persona</h2>
+      <dl class="result-list">
+        <div>
+          <dt>Persona Name</dt>
+          <dd data-persona-name></dd>
+        </div>
+        <div>
+          <dt>Risk Level</dt>
+          <dd data-risk-level></dd>
+        </div>
+        <div>
+          <dt>Main Weakness</dt>
+          <dd data-main-weakness></dd>
+        </div>
+        <div>
+          <dt>Likely Scam Types</dt>
+          <dd data-likely-scam-types></dd>
+        </div>
+        <div>
+          <dt>Specific Scam Variation</dt>
+          <dd data-specific-scam-variation></dd>
+        </div>
+        <div>
+          <dt>Reasoning</dt>
+          <dd data-reasoning></dd>
+        </div>
+      </dl>
+
+      <div class="scenario-panel">
+        <h3 data-scenario-title></h3>
+        <p data-scenario-text></p>
+        <p class="form-note">Testing note: Before clicking a choice, start the second n8n webhook listener.</p>
+        <div class="choice-card-grid" data-choice-list></div>
+        <div class="analysis-loading hidden" data-choice-loading role="status" aria-live="polite">
+          <span class="loading-spinner" aria-hidden="true"></span>
+          <span>Simulating your choice...</span>
+        </div>
+        <p class="form-status error hidden" data-choice-error></p>
+      </div>
+
+      <div class="choice-outcome-panel hidden" data-choice-outcome>
+        <h3>Choice Outcome</h3>
+        <dl class="result-list">
+          <div>
+            <dt>Selected Choice</dt>
+            <dd data-selected-choice></dd>
+          </div>
+          <div>
+            <dt>Outcome Summary</dt>
+            <dd data-outcome-summary></dd>
+          </div>
+          <div>
+            <dt>Scam Risk</dt>
+            <dd data-scam-risk></dd>
+          </div>
+          <div>
+            <dt>What Happens Next</dt>
+            <dd data-what-happens-next></dd>
+          </div>
+          <div>
+            <dt>Red Flags Missed</dt>
+            <dd>
+              <ul class="check-list" data-red-flags-missed></ul>
+            </dd>
+          </div>
+          <div>
+            <dt>Feedback</dt>
+            <dd data-choice-feedback></dd>
+          </div>
+          <div>
+            <dt>Safety Tips</dt>
+            <dd>
+              <ul class="check-list" data-safety-tips></ul>
+            </dd>
+          </div>
+          <div>
+            <dt>Score</dt>
+            <dd data-choice-score></dd>
+          </div>
+          <div>
+            <dt>Readiness Level</dt>
+            <dd data-readiness-level></dd>
+          </div>
+        </dl>
+      </div>
+    </article>
+
+    <article class="result-card hidden" data-digital-twin-error>
+      <h2>Simulator Error</h2>
+      <p data-digital-twin-error-message></p>
+    </article>
+  </aside>
+</section>
+
+<script type="module">
+  (() => {
+    // Express/EJS fills these from .env so the page can use import.meta.env values.
+    import.meta.env = import.meta.env || {};
+    import.meta.env.VITE_N8N_WEBHOOK_URL =
+      import.meta.env.VITE_N8N_WEBHOOK_URL || <%- JSON.stringify(personaWebhookUrl) %>;
+    import.meta.env.VITE_N8N_CHOICE_WEBHOOK_URL =
+      import.meta.env.VITE_N8N_CHOICE_WEBHOOK_URL || <%- JSON.stringify(choiceWebhookUrl) %>;
+
+    const ERROR_MESSAGE = "Unable to generate scam persona. Please make sure the n8n webhook is listening and try again.";
+    const CHOICE_ERROR_MESSAGE = "Unable to simulate choice. Please make sure the second n8n webhook is listening and try again.";
+
+    const form = getElement("[data-digital-twin-form]");
+
+    if (!form) {
+      return;
+    }
+
+    const loading = getElement("[data-digital-twin-loading]");
+    const emptyState = getElement("[data-digital-twin-empty]");
+    const resultCard = getElement("[data-digital-twin-result]");
+    const errorCard = getElement("[data-digital-twin-error]");
+    const errorMessage = getElement("[data-digital-twin-error-message]");
+    const submitButton = form.querySelector('button[type="submit"]');
+    const choiceLoading = getElement("[data-choice-loading]");
+    const choiceError = getElement("[data-choice-error]");
+    const choiceOutcome = getElement("[data-choice-outcome]");
+    let result = null;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      console.log("Generate persona clicked");
+      setLoading(true);
+      showEmptyState();
+
+      // Build the exact JSON shape expected by the n8n workflow.
+      const formData = new FormData(form);
+      const payload = {
+        userId: "test001",
+        ageGroup: formData.get("ageGroup"),
+        onlineShopping: formData.get("onlineShopping"),
+        respondsToUrgency: formData.get("respondsToUrgency"),
+        interestedInJobs: formData.get("interestedInJobs"),
+        checksLinks: formData.get("checksLinks"),
+        investmentInterest: formData.get("investmentInterest")
+      };
+
+      console.log("Using Phase 1 webhook:", import.meta.env.VITE_N8N_WEBHOOK_URL);
+      console.log("Sending questionnaire payload:", payload);
+
+      try {
+        const response = await fetch(import.meta.env.VITE_N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error(ERROR_MESSAGE);
+        }
+
+        const data = await response.json();
+        showResult(normalizeN8nResult(data));
+      } catch (error) {
+        console.error("Persona request failed:", error);
+        showError(ERROR_MESSAGE);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    function setLoading(isLoading) {
+      form.setAttribute("aria-busy", String(isLoading));
+
+      if (submitButton) {
+        submitButton.disabled = isLoading;
+        submitButton.textContent = isLoading ? "Generating..." : "Generate My Scam Persona";
+      }
+
+      toggleHidden(loading, !isLoading);
+    }
+
+    function showEmptyState() {
+      toggleHidden(emptyState, false);
+      toggleHidden(resultCard, true);
+      toggleHidden(errorCard, true);
+      setElementText(errorMessage, "");
+      result = null;
+      clearResult();
+    }
+
+    function showResult(generatedResult) {
+      if (!generatedResult || typeof generatedResult !== "object") {
+        showError(ERROR_MESSAGE);
+        return;
+      }
+
+      toggleHidden(emptyState, true);
+      toggleHidden(errorCard, true);
+      result = generatedResult;
+      renderResult(generatedResult);
+      toggleHidden(resultCard, false);
+    }
+
+    function showError(message) {
+      toggleHidden(emptyState, true);
+      toggleHidden(resultCard, true);
+      setElementText(errorMessage, message);
+      toggleHidden(errorCard, false);
+    }
+
+    function normalizeN8nResult(data) {
+      const result = Array.isArray(data) ? data[0] : data;
+
+      if (result && typeof result === "object" && result.json) {
+        return result.json;
+      }
+
+      if (result && typeof result === "object" && result.body) {
+        return result.body;
+      }
+
+      if (result && typeof result === "object" && result.data) {
+        return result.data;
+      }
+
+      if (typeof result === "string") {
+        try {
+          return JSON.parse(result);
+        } catch (error) {
+          return result;
+        }
+      }
+
+      return result;
+    }
+
+    function parseJsonResponse(responseText) {
+      if (!String(responseText || "").trim()) {
+        throw new Error("n8n returned an empty response body.");
+      }
+
+      try {
+        return JSON.parse(responseText);
+      } catch (error) {
+        throw new Error(`n8n returned a non-JSON response: ${responseText}`);
+      }
+    }
+
+    function renderResult(result) {
+      const persona = result.persona || {};
+      const scenario = result.scenario || {};
+
+      setText("[data-persona-name]", persona.personaName);
+      setText("[data-risk-level]", persona.riskLevel);
+      setText("[data-main-weakness]", persona.mainWeakness);
+      setText(
+        "[data-likely-scam-types]",
+        Array.isArray(persona.likelyScamTypes) ? persona.likelyScamTypes.join(", ") : persona.likelyScamTypes
+      );
+      setText("[data-specific-scam-variation]", persona.specificScamVariation);
+      setText("[data-reasoning]", persona.reasoning);
+      setText("[data-scenario-title]", scenario.scenarioTitle);
+      setText("[data-scenario-text]", scenario.scenarioText);
+
+      renderChoices(Array.isArray(scenario.choices) ? scenario.choices : []);
+    }
+
+    function renderChoices(choices) {
+      const choiceList = getElement("[data-choice-list]");
+      replaceChildrenSafe(choiceList);
+
+      choices.forEach((choice) => {
+        const button = document.createElement("button");
+        button.className = "choice-card";
+        button.type = "button";
+        button.textContent = `${choice.option}. ${choice.text}`;
+        button.addEventListener("click", () => handleChoiceClick(choice));
+        appendChildSafe(choiceList, button);
+      });
+    }
+
+    async function handleChoiceClick(choice) {
+      console.log("Choice clicked:", choice);
+
+      if (!result) {
+        showChoiceError(CHOICE_ERROR_MESSAGE);
+        return;
+      }
+
+      const selectedChoice = `${choice.option}. ${choice.text}`;
+
+      // Send the scenario context and selected option to the second n8n test webhook.
+      const payload = {
+        userId: result.userId,
+        persona: result.persona,
+        scenario: result.scenario,
+        selectedChoice
+      };
+
+      console.log("Sending choice payload:", payload);
+      setChoiceLoading(true);
+      clearChoiceOutcome();
+
+      try {
+        console.log("Using Phase 2 webhook:", import.meta.env.VITE_N8N_CHOICE_WEBHOOK_URL);
+
+        const response = await fetch(import.meta.env.VITE_N8N_CHOICE_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        console.log("Phase 2 response status:", response.status, response.statusText);
+        const responseText = await response.text();
+        console.log("Phase 2 raw response:", responseText);
+
+        if (!response.ok) {
+          throw new Error(`Phase 2 webhook returned HTTP ${response.status}: ${responseText}`);
+        }
+
+        const data = parseJsonResponse(responseText);
+        renderChoiceOutcome(normalizeN8nResult(data));
+      } catch (error) {
+        console.error("Choice request failed:", error);
+        showChoiceError(CHOICE_ERROR_MESSAGE);
+      } finally {
+        setChoiceLoading(false);
+      }
+    }
+
+    function setChoiceLoading(isLoading) {
+      toggleHidden(choiceLoading, !isLoading);
+
+      document.querySelectorAll("[data-choice-list] button").forEach((button) => {
+        button.disabled = isLoading;
+      });
+    }
+
+    function renderChoiceOutcome(result) {
+      if (!result || typeof result !== "object") {
+        showChoiceError(CHOICE_ERROR_MESSAGE);
+        return;
+      }
+
+      const outcome = result.outcome || {};
+      const feedback = result.feedback || {};
+
+      toggleHidden(choiceError, true);
+      setText("[data-selected-choice]", result.selectedChoice);
+      setText("[data-outcome-summary]", outcome.outcomeSummary);
+      setText("[data-scam-risk]", outcome.scamRisk);
+      setText("[data-what-happens-next]", outcome.whatHappensNext);
+      renderList("[data-red-flags-missed]", outcome.redFlagsMissed);
+      setText("[data-choice-feedback]", feedback.feedback);
+      renderList("[data-safety-tips]", feedback.safetyTips);
+      setText("[data-choice-score]", feedback.score);
+      setText("[data-readiness-level]", feedback.readinessLevel);
+      toggleHidden(choiceOutcome, false);
+    }
+
+    function showChoiceError(message) {
+      toggleHidden(choiceOutcome, true);
+      setElementText(choiceError, message);
+      toggleHidden(choiceError, false);
+    }
+
+    function clearResult() {
+      document.querySelectorAll("[data-digital-twin-result] dd, [data-scenario-title], [data-scenario-text]").forEach((element) => {
+        element.textContent = "";
+      });
+
+      replaceChildrenSafe(getElement("[data-choice-list]"));
+      clearChoiceOutcome();
+      toggleHidden(choiceError, true);
+      setElementText(choiceError, "");
+    }
+
+    function setText(selector, value) {
+      setElementText(
+        getElement(selector),
+        value === null || value === undefined || value === "" ? "Not returned" : String(value)
+      );
+    }
+
+    function clearChoiceOutcome() {
+      toggleHidden(choiceOutcome, true);
+      [
+        "[data-selected-choice]",
+        "[data-outcome-summary]",
+        "[data-scam-risk]",
+        "[data-what-happens-next]",
+        "[data-choice-feedback]",
+        "[data-choice-score]",
+        "[data-readiness-level]"
+      ].forEach((selector) => {
+        setElementText(getElement(selector), "");
+      });
+      replaceChildrenSafe(getElement("[data-red-flags-missed]"));
+      replaceChildrenSafe(getElement("[data-safety-tips]"));
+      toggleHidden(choiceError, true);
+      setElementText(choiceError, "");
+    }
+
+    function renderList(selector, values) {
+      const list = getElement(selector);
+      replaceChildrenSafe(list);
+
+      const items = Array.isArray(values) ? values : [values].filter(Boolean);
+
+      if (!items.length) {
+        const item = document.createElement("li");
+        item.textContent = "Not returned";
+        appendChildSafe(list, item);
+        return;
+      }
+
+      items.forEach((value) => {
+        const item = document.createElement("li");
+        item.textContent = String(value);
+        appendChildSafe(list, item);
+      });
+    }
+
+    function getElement(selector) {
+      return document.querySelector(selector);
+    }
+
+    function setElementText(element, value) {
+      if (element) {
+        element.textContent = value;
+      }
+    }
+
+    function replaceChildrenSafe(element) {
+      if (element) {
+        element.replaceChildren();
+      }
+    }
+
+    function appendChildSafe(parent, child) {
+      if (parent && child) {
+        parent.appendChild(child);
+      }
+    }
+
+    function toggleHidden(element, shouldHide) {
+      if (element) {
+        element.classList.toggle("hidden", shouldHide);
+      }
+    }
+  })();
+</script>
