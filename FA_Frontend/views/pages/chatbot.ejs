@@ -10,6 +10,12 @@
       id="sparklebot-webchat"
       class="webchat-box"
       data-bot-name="<%= botpress.botName %>"
+      data-risk-level="<%= scamContext ? scamContext.riskLevel : '' %>"
+      data-score="<%= scamContext ? scamContext.score : '' %>"
+      data-scam-type="<%= scamContext ? scamContext.scamType : '' %>"
+      data-red-flags="<%= scamContext ? scamContext.redFlags : '' %>"
+      data-recommended-action="<%= scamContext ? scamContext.recommendedAction : '' %>"
+      data-learning-prompts="<%= JSON.stringify(questions) %>"
     >
       <div class="webchat-loading">
         <p>Loading SparkleBot...</p>
@@ -48,7 +54,7 @@
       </section>
     <% } %>
 
-    <h2>Example Questions</h2>
+    <h2>Recommended Learning</h2>
     <ul class="check-list">
       <% questions.forEach((question) => { %>
         <li><%= question %></li>

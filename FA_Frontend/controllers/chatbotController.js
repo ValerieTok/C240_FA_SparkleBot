@@ -1,4 +1,6 @@
 const pageModel = require("../models/pageModel");
+const n8nService = require("../services/n8nService");
+
 function getBotpressConfig() {
   return {
     botName: "SparkleBot",
@@ -24,13 +26,33 @@ function getScamContext(query) {
 }
 
 exports.showChatbot = (req, res) => {
+  const scamContext = getScamContext(req.query);
+
   res.render("layout", {
     title: "AI Chatbot",
     currentPage: "chatbot",
     page: pageModel.getPage("chatbot"),
-    questions: pageModel.getChatbotQuestions(),
+    questions: pageModel.getChatbotQuestions(scamContext ? scamContext.scamType : ""),
     botpress: getBotpressConfig(),
-    scamContext: getScamContext(req.query),
+    scamContext,
     body: "pages/chatbot"
   });
+};
+
+exports.submitRecommendedLearningContext = (req, res) => {
+  const scamType = String(req.body.scamType || req.body.detectedScamType || req.body.scam_type || "unknown").trim();
+  const learningPrompts = Array.isArray(req.body.learningPrompts) ? req.body.learningPrompts.map(String) : [];
+
+  n8nService.sendRecommendedLearningContext({
+    riskLevel: String(req.body.riskLevel || "").trim(),
+    score: String(req.body.score || "").trim(),
+    scamType,
+    detectedScamType: scamType,
+    scam_type: scamType,
+    redFlags: String(req.body.redFlags || "").trim(),
+    recommendedAction: String(req.body.recommendedAction || "").trim(),
+    learningPrompts
+  });
+
+  res.json({ success: true });
 };

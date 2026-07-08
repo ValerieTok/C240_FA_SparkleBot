@@ -170,7 +170,7 @@ async function analyzeImage(req, res, notes) {
 }
 
 function buildChatbotHandoffUrl(analysis) {
-  if (!isHighRiskAnalysis(analysis)) {
+  if (!analysis || typeof analysis !== "object") {
     return null;
   }
 
@@ -183,20 +183,6 @@ function buildChatbotHandoffUrl(analysis) {
   });
 
   return `/chatbot?${params.toString()}`;
-}
-
-function isHighRiskAnalysis(analysis) {
-  if (!analysis || typeof analysis !== "object") {
-    return false;
-  }
-
-  const riskLevel = String(analysis.riskLevel || "").trim().toLowerCase();
-
-  if (riskLevel === "high") {
-    return true;
-  }
-
-  return typeof analysis.score === "number" && analysis.score >= 70;
 }
 
 function getFriendlyAnalysisError(error) {

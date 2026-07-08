@@ -920,6 +920,20 @@ textarea {
   margin: 0;
 }
 
+iframe[src*="botpress"],
+iframe[title*="Botpress"],
+iframe[title="Bot"],
+iframe[name*="botpress"],
+[id*="botpress"][style*="position: fixed"],
+[class*="botpress"][style*="position: fixed"],
+[id*="bp-web"][style*="position: fixed"],
+[class*="bp-web"][style*="position: fixed"],
+[aria-label*="Bot"][style*="position: fixed"],
+[title="Bot"][style*="position: fixed"] {
+  right: auto !important;
+  left: 24px !important;
+}
+
 .check-list {
   padding-left: 20px;
   margin-bottom: 0;

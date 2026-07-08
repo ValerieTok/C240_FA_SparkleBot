@@ -37,12 +37,58 @@ const pages = {
   }
 };
 
-const chatbotQuestions = [
-  "Is this message asking for my bank details a scam?",
-  "What should I do if I clicked a suspicious link?",
-  "How do I recognize a job scam?",
-  "Can you explain phishing in simple terms?"
+const defaultLearningPrompts = [
+  "What warning signs should I learn from this result?",
+  "What should I do before replying or clicking anything?",
+  "How can I verify if this message is legitimate?",
+  "What steps should I take if I already shared information?"
 ];
 
+const learningPromptsByScamType = {
+  phishing: [
+    "How do phishing scams try to steal passwords or bank details?",
+    "What signs show that a link or login page may be fake?",
+    "What should I do if I clicked a phishing link?",
+    "How can I verify a message claiming to be from a bank or government service?"
+  ],
+  job: [
+    "What are common warning signs of fake job offers?",
+    "Why do scammers ask for payment before hiring?",
+    "How can I verify that a recruiter or company is real?",
+    "What should I do if I already sent my personal details?"
+  ],
+  payment: [
+    "How do payment scams pressure people into transferring money?",
+    "What checks should I do before paying someone online?",
+    "What should I do if I already made a payment?",
+    "How can I spot fake invoices or refund requests?"
+  ],
+  impersonation: [
+    "How do impersonation scams pretend to be trusted people or services?",
+    "What should I check before trusting an urgent request?",
+    "How can I verify an official message safely?",
+    "What should I do if I shared information with an impersonator?"
+  ],
+  investment: [
+    "What warning signs appear in investment scams?",
+    "Why are guaranteed returns a red flag?",
+    "How can I verify an investment platform?",
+    "What should I do if I already transferred money?"
+  ]
+};
+
+function getChatbotQuestions(scamType = "") {
+  const normalizedScamType = String(scamType).trim().toLowerCase();
+  const matchedType = Object.keys(learningPromptsByScamType).find((type) =>
+    normalizedScamType.includes(type)
+  );
+
+  if (matchedType) {
+    return learningPromptsByScamType[matchedType];
+  }
+
+  return defaultLearningPrompts;
+}
+
 exports.getPage = (key) => pages[key];
-exports.getChatbotQuestions = () => chatbotQuestions;
+exports.getChatbotQuestions = getChatbotQuestions;

@@ -177,6 +177,20 @@ function sendFeedback(feedback) {
   );
 }
 
+function sendRecommendedLearningContext(context) {
+  postWebhook(
+    process.env.N8N_RECOMMENDED_LEARNING_WEBHOOK_URL || process.env.N8N_SCAM_LEARNING_WEBHOOK_URL,
+    {
+      eventType: "recommended_learning_context",
+      submittedAt: new Date().toISOString(),
+      source: "SparkleBot Frontend",
+      ...context
+    },
+    "recommended learning context",
+    "N8N_RECOMMENDED_LEARNING_WEBHOOK_URL"
+  );
+}
+
 function parseAnalysisResponse(responseText) {
   const trimmedText = String(responseText || "").trim();
 
@@ -284,9 +298,21 @@ function hasAnalysisFields(value) {
   return Boolean(
     value &&
       typeof value === "object" &&
-      (value.riskLevel || value.risk_level || value.risk) &&
-      (value.scamType || value.scam_type || value.type) &&
-      (value.recommendedAction || value.recommended_action || value.action || value.advice)
+      (value.riskLevel || value.risk_level || value.risk || value.score || value.aiRiskScore || value.ai_risk_score) &&
+      (
+        value.scamType ||
+        value.scam_type ||
+        value.type ||
+        value.category ||
+        value.learningTopics ||
+        value.learning_topics ||
+        value.suggestedQuestions ||
+        value.suggested_questions ||
+        value.redFlags ||
+        value.red_flags ||
+        value.reasons ||
+        value.indicators
+      )
   );
 }
 
@@ -311,7 +337,13 @@ function normalizeAnalysis(result) {
     throw new Error("n8n scam analysis response is missing required analysis fields.");
   }
 
-  const redFlags = result.redFlags || result.red_flags || result.flags || [];
+  const redFlags =
+    result.redFlags ||
+    result.red_flags ||
+    result.flags ||
+    result.reasons ||
+    result.indicators ||
+    [];
   const riskLevel = normalizeRiskLevel(result.riskLevel || result.risk_level || result.risk);
   const rawScore =
     result.score ??
@@ -334,19 +366,14 @@ function normalizeAnalysis(result) {
 
   return {
     riskLevel,
-    scamType: String(result.scamType || result.scam_type || result.type),
+    scamType: normalizeScamType(result),
     redFlags: Array.isArray(redFlags)
       ? redFlags.map(String)
       : String(redFlags || "")
           .split(/\r?\n|,\s*/)
           .map((flag) => flag.trim())
           .filter(Boolean),
-    recommendedAction: String(
-      result.recommendedAction ||
-        result.recommended_action ||
-        result.action ||
-        result.advice
-    ),
+    recommendedAction: normalizeRecommendedAction(result),
     extractedText,
     message: String(result.message || result.content || extractedText || ""),
     contentType: String(result.contentType || result.content_type || result.checkType || result.check_type || ""),
@@ -354,6 +381,102 @@ function normalizeAnalysis(result) {
     score,
     isScam
   };
+}
+
+function normalizeRecommendedAction(result) {
+  const explicitAction =
+    result.recommendedAction ||
+    result.recommended_action ||
+    result.action ||
+    result.advice;
+
+  if (explicitAction) {
+    return String(explicitAction).trim();
+  }
+
+  const scamType = inferScamType(result);
+
+  if (scamType === "Phishing") {
+    return "Do not click the link or provide personal information. Verify through the official website or app, then block and report the sender.";
+  }
+
+  if (result.isScam === true || normalizeScore(result.score ?? result.aiRiskScore ?? result.ai_risk_score, "") >= 70) {
+    return "Do not continue with the request. Verify through an official source and report the suspicious message.";
+  }
+
+  return "Review the warning signs and verify through an official source before taking action.";
+}
+
+function normalizeScamType(result) {
+  const explicitType = result.scamType || result.scam_type || result.type;
+
+  if (explicitType) {
+    return String(explicitType).trim();
+  }
+
+  const inferredType = inferScamType(result);
+
+  if (inferredType) {
+    return inferredType;
+  }
+
+  return String(result.category || "Unknown").trim() || "Unknown";
+}
+
+function inferScamType(result) {
+  const text = [
+    result.category,
+    result.reason,
+    result.reasons,
+    result.redFlags,
+    result.red_flags,
+    result.flags,
+    result.indicators,
+    result.learningTopics,
+    result.learning_topics,
+    result.suggestedQuestions,
+    result.suggested_questions,
+    result.learningReason,
+    result.learning_reason,
+    result.message,
+    result.content
+  ]
+    .flatMap((value) => {
+      if (Array.isArray(value)) {
+        return value;
+      }
+
+      if (value && typeof value === "object") {
+        return Object.values(value);
+      }
+
+      return [value];
+    })
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (text.includes("phishing") || text.includes("credential") || text.includes("login") || text.includes("suspicious link")) {
+    return "Phishing";
+  }
+
+  if (text.includes("job") || text.includes("recruiter") || text.includes("hiring")) {
+    return "Job scam";
+  }
+
+  if (text.includes("payment") || text.includes("invoice") || text.includes("refund") || text.includes("transfer")) {
+    return "Payment scam";
+  }
+
+  if (text.includes("impersonation") || text.includes("impersonates") || text.includes("official service")) {
+    return "Impersonation scam";
+  }
+
+  if (text.includes("investment") || text.includes("guaranteed return") || text.includes("crypto")) {
+    return "Investment scam";
+  }
+
+  return "";
 }
 
 function normalizeExtractedText(result) {
@@ -541,5 +664,6 @@ module.exports = {
   getFriendlyReportError,
   sendHighRiskAlert,
   submitScamReport,
-  sendFeedback
+  sendFeedback,
+  sendRecommendedLearningContext
 };

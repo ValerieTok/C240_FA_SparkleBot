@@ -56,6 +56,7 @@ router.post("/checker", (req, res) => {
   });
 });
 router.get("/chatbot", chatbotController.showChatbot);
+router.post("/chatbot/recommended-learning-context", chatbotController.submitRecommendedLearningContext);
 router.get("/report-scam", reportController.showReport);
 router.post("/report-scam", reportController.submitReport);
 router.get("/admin/scam-trends", scamTrendsController.showDashboard);
