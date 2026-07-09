@@ -1,40 +1,56 @@
-const features = [
+const featureGroups = [
   {
-    title: "Scam Detector",
-    description: "Analyze suspicious text, URLs, or screenshots and receive a risk level, scam score, red flags, and recommended action.",
-    link: "/checker",
-    buttonText: "Check Content"
+    title: "Scam Checking & SparkleBot Guidance",
+    description: "Check suspicious text, URLs, or screenshots for scam signals, then use SparkleBot for follow-up guidance and prevention steps.",
+    links: [
+      {
+        label: "Scam Detector",
+        href: "/checker"
+      },
+      {
+        label: "SparkleBot",
+        href: "/chatbot"
+      }
+    ]
   },
   {
-    title: "AI Scam Guidance",
-    description: "Open SparkleBot for follow-up guidance on scam warnings, prevention steps, and what to do after a suspicious message.",
-    link: "/chatbot",
-    buttonText: "Ask SparkleBot"
+    title: "Reports & Scam Trends",
+    description: "Submit suspicious activity details and review summarized scam pattern insights from recorded reports and analysis data.",
+    links: [
+      {
+        label: "Scam Report",
+        href: "/report-scam"
+      },
+      {
+        label: "Scam Trends",
+        href: "/admin/scam-trends"
+      }
+    ]
   },
   {
-    title: "Report Scam",
-    description: "Submit suspicious activity details so they can be recorded and reviewed through the connected workflow.",
-    link: "/report-scam",
-    buttonText: "Submit Report"
+    title: "Feedback & Feedback Dashboard",
+    description: "Share whether the tools were useful, suggest improvements, and view collected feedback summaries.",
+    links: [
+      {
+        label: "Feedback",
+        href: "/feedback"
+      },
+      {
+        label: "Feedback Dashboard",
+        href: "/feedback-dashboard"
+      }
+    ]
   },
   {
-    title: "Scam Trends",
-    description: "View summarized scam pattern insights from recorded reports and analysis data.",
-    link: "/scam-trends",
-    buttonText: "View Trends"
-  },
-  {
-    title: "Feedback",
-    description: "Share whether the detector and chatbot were useful, and suggest improvements for the system.",
-    link: "/feedback",
-    buttonText: "Send Feedback"
-  },
-  {
-    title: "About AI",
-    description: "Learn what AI tools power SparkleBot and how the app uses automation to support scam awareness.",
-    link: "/about-ai",
-    buttonText: "Learn More"
+    title: "AI Digital Twin",
+    description: "Practice scam-response decisions through an interactive digital twin scenario.",
+    links: [
+      {
+        label: "AI Digital Twin",
+        href: "/digital-twin"
+      }
+    ]
   }
 ];
 
-exports.getFeatures = () => features;
+exports.getFeatures = () => featureGroups;

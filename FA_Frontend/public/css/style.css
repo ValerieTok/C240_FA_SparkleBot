@@ -35,40 +35,44 @@ a {
 }
 
 .navbar {
-  max-width: 1180px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: 14px 20px;
+  padding: 12px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
 }
 
 .brand {
+  flex: 0 0 auto;
   font-weight: 800;
   text-decoration: none;
-  font-size: 1.2rem;
+  font-size: 1.12rem;
   color: var(--blue-700);
 }
 
 .nav-links {
   list-style: none;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 4px;
   padding: 0;
   margin: 0;
+  min-width: 0;
 }
 
 .nav-links a {
   display: block;
-  padding: 8px 10px;
+  padding: 7px 8px;
   border-radius: 8px;
   text-decoration: none;
   color: var(--grey-700);
   font-weight: 700;
-  font-size: 0.94rem;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .nav-links a:hover,
@@ -260,8 +264,8 @@ h1 {
 }
 
 .home-feature-grid {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .home-video-section {
@@ -573,14 +577,15 @@ h1 {
 }
 
 .feature-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
   text-decoration: none;
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
 .home-feature-grid .feature-card {
-  min-height: 230px;
-  padding: 16px;
+  min-height: 238px;
+  padding: 18px;
 }
 
 .home-feature-grid .feature-card h3 {
@@ -594,6 +599,21 @@ h1 {
 
 .home-feature-grid .text-link {
   font-size: 0.92rem;
+}
+
+.feature-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.feature-link-row .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  text-decoration: none;
 }
 
 .feature-card:hover,
@@ -1258,7 +1278,7 @@ iframe[name*="botpress"],
 
 @media (max-width: 1120px) {
   .home-feature-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dashboard-header {
@@ -1317,6 +1337,7 @@ iframe[name*="botpress"],
     display: none;
     width: 100%;
     flex-direction: column;
+    flex-wrap: nowrap;
   }
 
   .nav-links.open {
