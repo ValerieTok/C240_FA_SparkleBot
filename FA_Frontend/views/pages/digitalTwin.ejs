@@ -168,6 +168,37 @@
             <dd data-readiness-level></dd>
           </div>
         </dl>
+
+        <div class="email-result-panel" data-email-result-section>
+          <h3>Send Result to Email</h3>
+          <label for="resultEmail">Email address</label>
+          <input id="resultEmail" type="email" data-result-email placeholder="name@example.com" autocomplete="email">
+          <button class="btn btn-primary" type="button" data-send-email-result>Send Result to Email</button>
+          <div class="analysis-loading hidden" data-email-loading role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span>Sending result...</span>
+          </div>
+          <p class="form-status success hidden" data-email-success></p>
+          <p class="form-status error hidden" data-email-error></p>
+        </div>
+
+        <div class="telegram-result-panel" data-telegram-result-section>
+          <h3>Send Result to Telegram</h3>
+          <div class="telegram-step">
+            <strong>Step 1: Connect Telegram</strong>
+            <button class="btn btn-primary" type="button" data-connect-telegram>Connect Telegram</button>
+          </div>
+          <div class="telegram-step">
+            <strong>Step 2: Send result</strong>
+            <button class="btn btn-primary" type="button" data-send-telegram-result>Send Result to Telegram</button>
+          </div>
+          <div class="analysis-loading hidden" data-telegram-loading role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span>Sending result...</span>
+          </div>
+          <p class="form-status success hidden" data-telegram-success></p>
+          <p class="form-status error hidden" data-telegram-error></p>
+        </div>
       </div>
     </article>
 
@@ -186,9 +217,23 @@
       import.meta.env.VITE_N8N_WEBHOOK_URL || <%- JSON.stringify(personaWebhookUrl) %>;
     import.meta.env.VITE_N8N_CHOICE_WEBHOOK_URL =
       import.meta.env.VITE_N8N_CHOICE_WEBHOOK_URL || <%- JSON.stringify(choiceWebhookUrl) %>;
+    import.meta.env.VITE_N8N_EMAIL_WEBHOOK_URL =
+      import.meta.env.VITE_N8N_EMAIL_WEBHOOK_URL ||
+      <%- JSON.stringify(typeof emailWebhookUrl === "undefined" ? "" : emailWebhookUrl) %>;
+    import.meta.env.NEXT_PUBLIC_N8N_TELEGRAM_WEBHOOK_URL =
+      import.meta.env.NEXT_PUBLIC_N8N_TELEGRAM_WEBHOOK_URL ||
+      <%- JSON.stringify(typeof telegramWebhookUrl === "undefined" ? "" : telegramWebhookUrl) %>;
+    import.meta.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME =
+      import.meta.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ||
+      <%- JSON.stringify(typeof telegramBotUsername === "undefined" ? "" : telegramBotUsername) %>;
 
     const ERROR_MESSAGE = "Unable to generate scam persona. Please make sure the n8n webhook is listening and try again.";
     const CHOICE_ERROR_MESSAGE = "Unable to simulate choice. Please make sure the second n8n webhook is listening and try again.";
+    const EMAIL_SUCCESS_MESSAGE = "Results sent successfully to your email.";
+    const EMAIL_ERROR_MESSAGE = "Unable to send results. Please try again.";
+    const TELEGRAM_SUCCESS_MESSAGE = "Results sent successfully to Telegram.";
+    const TELEGRAM_ERROR_MESSAGE = "Please connect Telegram first, then try again.";
+    const TELEGRAM_SESSION_STORAGE_KEY = "sparklebotTelegramSessionId";
 
     const form = getElement("[data-digital-twin-form]");
 
@@ -205,7 +250,31 @@
     const choiceLoading = getElement("[data-choice-loading]");
     const choiceError = getElement("[data-choice-error]");
     const choiceOutcome = getElement("[data-choice-outcome]");
+    const resultEmailInput = getElement("[data-result-email]");
+    const sendEmailButton = getElement("[data-send-email-result]");
+    const emailLoading = getElement("[data-email-loading]");
+    const emailSuccess = getElement("[data-email-success]");
+    const emailError = getElement("[data-email-error]");
+    const connectTelegramButton = getElement("[data-connect-telegram]");
+    const sendTelegramButton = getElement("[data-send-telegram-result]");
+    const telegramLoading = getElement("[data-telegram-loading]");
+    const telegramSuccess = getElement("[data-telegram-success]");
+    const telegramError = getElement("[data-telegram-error]");
+    const sessionId = getOrCreateTelegramSessionId();
     let result = null;
+    let finalResult = null;
+
+    if (sendEmailButton) {
+      sendEmailButton.addEventListener("click", handleSendEmailResult);
+    }
+
+    if (connectTelegramButton) {
+      connectTelegramButton.addEventListener("click", handleConnectTelegram);
+    }
+
+    if (sendTelegramButton) {
+      sendTelegramButton.addEventListener("click", handleSendTelegramResult);
+    }
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -266,6 +335,7 @@
       toggleHidden(errorCard, true);
       setElementText(errorMessage, "");
       result = null;
+      finalResult = null;
       clearResult();
     }
 
@@ -400,7 +470,7 @@
         }
 
         const data = parseJsonResponse(responseText);
-        renderChoiceOutcome(normalizeN8nResult(data));
+        renderChoiceOutcome(normalizeN8nResult(data), selectedChoice);
       } catch (error) {
         console.error("Choice request failed:", error);
         showChoiceError(CHOICE_ERROR_MESSAGE);
@@ -417,17 +487,17 @@
       });
     }
 
-    function renderChoiceOutcome(result) {
-      if (!result || typeof result !== "object") {
+    function renderChoiceOutcome(choiceResult, selectedChoice) {
+      if (!choiceResult || typeof choiceResult !== "object") {
         showChoiceError(CHOICE_ERROR_MESSAGE);
         return;
       }
 
-      const outcome = result.outcome || {};
-      const feedback = result.feedback || {};
+      const outcome = choiceResult.outcome || {};
+      const feedback = choiceResult.feedback || {};
 
       toggleHidden(choiceError, true);
-      setText("[data-selected-choice]", result.selectedChoice);
+      setText("[data-selected-choice]", choiceResult.selectedChoice || selectedChoice);
       setText("[data-outcome-summary]", outcome.outcomeSummary);
       setText("[data-scam-risk]", outcome.scamRisk);
       setText("[data-what-happens-next]", outcome.whatHappensNext);
@@ -436,13 +506,298 @@
       renderList("[data-safety-tips]", feedback.safetyTips);
       setText("[data-choice-score]", feedback.score);
       setText("[data-readiness-level]", feedback.readinessLevel);
+      finalResult = buildFinalResult(choiceResult, selectedChoice);
+      clearEmailMessages();
+      clearTelegramMessages();
       toggleHidden(choiceOutcome, false);
     }
 
     function showChoiceError(message) {
       toggleHidden(choiceOutcome, true);
+      finalResult = null;
+      clearEmailResult();
+      clearTelegramResult();
       setElementText(choiceError, message);
       toggleHidden(choiceError, false);
+    }
+
+    async function handleSendEmailResult() {
+      clearEmailMessages();
+
+      const userEmail = String(resultEmailInput ? resultEmailInput.value : "").trim();
+
+      if (!userEmail) {
+        showEmailError(EMAIL_ERROR_MESSAGE);
+        return;
+      }
+
+      if (!finalResult) {
+        showEmailError(EMAIL_ERROR_MESSAGE);
+        return;
+      }
+
+      const emailWebhookUrl = String(import.meta.env.VITE_N8N_EMAIL_WEBHOOK_URL || "").trim();
+
+      if (!emailWebhookUrl || !emailWebhookUrl.includes("/webhook-test/")) {
+        showEmailError(EMAIL_ERROR_MESSAGE);
+        return;
+      }
+
+      try {
+        setEmailLoading(true);
+
+        const response = await fetch(emailWebhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: userEmail,
+            personaName: finalResult.personaName,
+            riskLevel: finalResult.riskLevel,
+            likelyScamTypes: finalResult.likelyScamTypes,
+            scenarioTitle: finalResult.scenarioTitle,
+            scenarioText: finalResult.scenarioText,
+            selectedChoice: finalResult.selectedChoice,
+            outcomeSummary: finalResult.outcomeSummary,
+            feedback: finalResult.feedback,
+            score: finalResult.score
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Email webhook returned HTTP ${response.status}.`);
+        }
+
+        const responseText = await response.text();
+        const data = normalizeN8nResult(parseJsonResponse(responseText));
+
+        if (!data || data.success !== true) {
+          throw new Error("Email webhook did not return success.");
+        }
+
+        showEmailSuccess(EMAIL_SUCCESS_MESSAGE);
+      } catch (error) {
+        console.error("Email result request failed:", error);
+        showEmailError(EMAIL_ERROR_MESSAGE);
+      } finally {
+        setEmailLoading(false);
+      }
+    }
+
+    function buildFinalResult(choiceResult, selectedChoice) {
+      const persona = (result && result.persona) || {};
+      const scenario = (result && result.scenario) || {};
+      const outcome = choiceResult.outcome || {};
+      const feedback = choiceResult.feedback || {};
+
+      return {
+        personaName: persona.personaName,
+        riskLevel: persona.riskLevel,
+        likelyScamTypes: formatScamTypes(persona.likelyScamTypes),
+        scenarioTitle: scenario.scenarioTitle,
+        scenarioText: scenario.scenarioText,
+        selectedChoice: choiceResult.selectedChoice || selectedChoice,
+        outcomeSummary: outcome.outcomeSummary,
+        feedback: feedback.feedback,
+        score: feedback.score
+      };
+    }
+
+    function formatScamTypes(value) {
+      if (Array.isArray(value)) {
+        return value.filter(Boolean).map(String).join(", ");
+      }
+
+      return value;
+    }
+
+    function setEmailLoading(isLoading) {
+      toggleHidden(emailLoading, !isLoading);
+
+      if (sendEmailButton) {
+        sendEmailButton.disabled = isLoading;
+        sendEmailButton.textContent = isLoading ? "Sending..." : "Send Result to Email";
+      }
+    }
+
+    function showEmailSuccess(message) {
+      setElementText(emailSuccess, message);
+      toggleHidden(emailSuccess, false);
+      toggleHidden(emailError, true);
+    }
+
+    function showEmailError(message) {
+      setElementText(emailError, message);
+      toggleHidden(emailError, false);
+      toggleHidden(emailSuccess, true);
+    }
+
+    function clearEmailResult() {
+      if (resultEmailInput) {
+        resultEmailInput.value = "";
+      }
+
+      clearEmailMessages();
+      setEmailLoading(false);
+    }
+
+    function clearEmailMessages() {
+      setElementText(emailSuccess, "");
+      setElementText(emailError, "");
+      toggleHidden(emailSuccess, true);
+      toggleHidden(emailError, true);
+    }
+
+    function handleConnectTelegram() {
+      clearTelegramMessages();
+
+      const botUsername = String(import.meta.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "")
+        .trim()
+        .replace(/^@/, "");
+
+      if (!botUsername || !sessionId) {
+        showTelegramError(TELEGRAM_ERROR_MESSAGE);
+        return;
+      }
+
+      window.open(`https://t.me/${botUsername}?start=${encodeURIComponent(sessionId)}`, "_blank", "noopener,noreferrer");
+    }
+
+    async function handleSendTelegramResult() {
+      clearTelegramMessages();
+
+      if (!finalResult) {
+        showTelegramError(TELEGRAM_ERROR_MESSAGE);
+        return;
+      }
+
+      const telegramWebhookUrl = String(import.meta.env.NEXT_PUBLIC_N8N_TELEGRAM_WEBHOOK_URL || "").trim();
+
+      if (!telegramWebhookUrl || !telegramWebhookUrl.includes("/webhook-test/")) {
+        showTelegramError(TELEGRAM_ERROR_MESSAGE);
+        return;
+      }
+
+      try {
+        setTelegramLoading(true);
+
+        const response = await fetch(telegramWebhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId,
+            personaName: finalResult.personaName,
+            riskLevel: finalResult.riskLevel,
+            likelyScamTypes: finalResult.likelyScamTypes,
+            scenarioTitle: finalResult.scenarioTitle,
+            scenarioText: finalResult.scenarioText,
+            selectedChoice: finalResult.selectedChoice,
+            outcomeSummary: finalResult.outcomeSummary,
+            feedback: finalResult.feedback,
+            score: finalResult.score
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Telegram webhook returned HTTP ${response.status}.`);
+        }
+
+        const responseText = await response.text();
+        const data = normalizeN8nResult(parseJsonResponse(responseText));
+
+        if (!data || data.success !== true) {
+          throw new Error("Telegram webhook did not return success.");
+        }
+
+        showTelegramSuccess(TELEGRAM_SUCCESS_MESSAGE);
+      } catch (error) {
+        console.error("Telegram result request failed:", error);
+        showTelegramError(TELEGRAM_ERROR_MESSAGE);
+      } finally {
+        setTelegramLoading(false);
+      }
+    }
+
+    function setTelegramLoading(isLoading) {
+      toggleHidden(telegramLoading, !isLoading);
+
+      if (sendTelegramButton) {
+        sendTelegramButton.disabled = isLoading;
+        sendTelegramButton.textContent = isLoading ? "Sending..." : "Send Result to Telegram";
+      }
+    }
+
+    function showTelegramSuccess(message) {
+      setElementText(telegramSuccess, message);
+      toggleHidden(telegramSuccess, false);
+      toggleHidden(telegramError, true);
+    }
+
+    function showTelegramError(message) {
+      setElementText(telegramError, message);
+      toggleHidden(telegramError, false);
+      toggleHidden(telegramSuccess, true);
+    }
+
+    function clearTelegramResult() {
+      clearTelegramMessages();
+      setTelegramLoading(false);
+    }
+
+    function clearTelegramMessages() {
+      setElementText(telegramSuccess, "");
+      setElementText(telegramError, "");
+      toggleHidden(telegramSuccess, true);
+      toggleHidden(telegramError, true);
+    }
+
+    function getOrCreateTelegramSessionId() {
+      const storedSessionId = getStoredTelegramSessionId(window.localStorage);
+
+      if (storedSessionId) {
+        return storedSessionId;
+      }
+
+      const generatedSessionId = createTelegramSessionId();
+
+      if (!generatedSessionId) {
+        return "";
+      }
+
+      if (storeTelegramSessionId(window.localStorage, generatedSessionId)) {
+        return generatedSessionId;
+      }
+
+      storeTelegramSessionId(window.sessionStorage, generatedSessionId);
+      return generatedSessionId;
+    }
+
+    function createTelegramSessionId() {
+      if (!window.crypto || typeof window.crypto.randomUUID !== "function") {
+        return "";
+      }
+
+      return window.crypto.randomUUID();
+    }
+
+    function getStoredTelegramSessionId(storage) {
+      try {
+        return storage ? storage.getItem(TELEGRAM_SESSION_STORAGE_KEY) : "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function storeTelegramSessionId(storage, value) {
+      try {
+        if (!storage) {
+          return false;
+        }
+
+        storage.setItem(TELEGRAM_SESSION_STORAGE_KEY, value);
+        return true;
+      } catch (error) {
+        return false;
+      }
     }
 
     function clearResult() {
@@ -452,6 +807,8 @@
 
       replaceChildrenSafe(getElement("[data-choice-list]"));
       clearChoiceOutcome();
+      clearEmailResult();
+      clearTelegramResult();
       toggleHidden(choiceError, true);
       setElementText(choiceError, "");
     }
@@ -476,6 +833,9 @@
       ].forEach((selector) => {
         setElementText(getElement(selector), "");
       });
+      finalResult = null;
+      clearEmailMessages();
+      clearTelegramMessages();
       replaceChildrenSafe(getElement("[data-red-flags-missed]"));
       replaceChildrenSafe(getElement("[data-safety-tips]"));
       toggleHidden(choiceError, true);
