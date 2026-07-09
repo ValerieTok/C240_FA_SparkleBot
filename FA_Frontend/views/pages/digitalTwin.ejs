@@ -3,77 +3,91 @@
   <p>Answer a short questionnaire to generate a scam persona and practice scenario based on your online habits.</p>
 </section>
 
-<section class="tool-panel detector-layout digital-twin-layout">
+<section class="tool-panel detector-layout digital-twin-layout" data-digital-twin-layout>
   <form class="form-card detector-card digital-twin-card" data-digital-twin-form>
-    <p class="form-note">Testing note: Start the n8n webhook listener before submitting.</p>
+    <button
+      class="questionnaire-toggle"
+      type="button"
+      data-questionnaire-toggle
+      aria-expanded="true"
+      aria-label="Collapse questionnaire"
+      title="Collapse questionnaire"
+    >
+      <span>Questionnaire</span>
+      <span class="questionnaire-toggle-icon" data-questionnaire-toggle-icon aria-hidden="true">&#9652;</span>
+    </button>
 
-    <div class="question-grid">
-      <div>
-        <label for="ageGroup">Age group</label>
-        <select id="ageGroup" name="ageGroup" required>
-          <option value="">Choose an option</option>
-          <option value="student">Student</option>
-          <option value="working adult">Working adult</option>
-          <option value="senior">Senior</option>
-          <option value="general user">General user</option>
-        </select>
+    <div class="questionnaire-content">
+      <p class="form-note">Testing note: Start the n8n webhook listener before submitting.</p>
+
+      <div class="question-grid">
+        <div>
+          <label for="ageGroup">Age group</label>
+          <select id="ageGroup" name="ageGroup" required>
+            <option value="">Choose an option</option>
+            <option value="student">Student</option>
+            <option value="working adult">Working adult</option>
+            <option value="senior">Senior</option>
+            <option value="general user">General user</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="onlineShopping">How often do you shop online?</label>
+          <select id="onlineShopping" name="onlineShopping" required>
+            <option value="">Choose an option</option>
+            <option value="often">Often</option>
+            <option value="sometimes">Sometimes</option>
+            <option value="rarely">Rarely</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="respondsToUrgency">Do urgent messages make you respond quickly?</label>
+          <select id="respondsToUrgency" name="respondsToUrgency" required>
+            <option value="">Choose an option</option>
+            <option value="yes">Yes</option>
+            <option value="sometimes">Sometimes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="interestedInJobs">Are you interested in online job offers?</label>
+          <select id="interestedInJobs" name="interestedInJobs" required>
+            <option value="">Choose an option</option>
+            <option value="yes">Yes</option>
+            <option value="sometimes">Sometimes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="checksLinks">Do you check links before clicking?</label>
+          <select id="checksLinks" name="checksLinks" required>
+            <option value="">Choose an option</option>
+            <option value="always">Always</option>
+            <option value="sometimes">Sometimes</option>
+            <option value="rarely">Rarely</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="investmentInterest">Interest in investment opportunities</label>
+          <select id="investmentInterest" name="investmentInterest" required>
+            <option value="">Choose an option</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
       </div>
 
-      <div>
-        <label for="onlineShopping">How often do you shop online?</label>
-        <select id="onlineShopping" name="onlineShopping" required>
-          <option value="">Choose an option</option>
-          <option value="often">Often</option>
-          <option value="sometimes">Sometimes</option>
-          <option value="rarely">Rarely</option>
-        </select>
+      <button class="btn btn-primary" type="submit">Generate My Scam Persona</button>
+      <div class="analysis-loading hidden" data-digital-twin-loading role="status" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>Generating your scam persona...</span>
       </div>
-
-      <div>
-        <label for="respondsToUrgency">Do urgent messages make you respond quickly?</label>
-        <select id="respondsToUrgency" name="respondsToUrgency" required>
-          <option value="">Choose an option</option>
-          <option value="yes">Yes</option>
-          <option value="sometimes">Sometimes</option>
-          <option value="no">No</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="interestedInJobs">Are you interested in online job offers?</label>
-        <select id="interestedInJobs" name="interestedInJobs" required>
-          <option value="">Choose an option</option>
-          <option value="yes">Yes</option>
-          <option value="sometimes">Sometimes</option>
-          <option value="no">No</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="checksLinks">Do you check links before clicking?</label>
-        <select id="checksLinks" name="checksLinks" required>
-          <option value="">Choose an option</option>
-          <option value="always">Always</option>
-          <option value="sometimes">Sometimes</option>
-          <option value="rarely">Rarely</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="investmentInterest">Interest in investment opportunities</label>
-        <select id="investmentInterest" name="investmentInterest" required>
-          <option value="">Choose an option</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-      </div>
-    </div>
-
-    <button class="btn btn-primary" type="submit">Generate My Scam Persona</button>
-    <div class="analysis-loading hidden" data-digital-twin-loading role="status" aria-live="polite">
-      <span class="loading-spinner" aria-hidden="true"></span>
-      <span>Generating your scam persona...</span>
     </div>
   </form>
 
@@ -81,6 +95,14 @@
     <article class="empty-results" data-digital-twin-empty>
       <span class="loading-spinner idle" aria-hidden="true"></span>
       <p>Your AI digital twin result will appear here</p>
+    </article>
+
+    <article class="result-card generation-card hidden" data-digital-twin-generating>
+      <div class="analysis-loading" role="status" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>Generating your AI scam persona...</span>
+      </div>
+      <p>Building your persona, risk profile, scam scenario, and practice choices.</p>
     </article>
 
     <article class="result-card hidden" data-digital-twin-result>
@@ -234,7 +256,22 @@
     const TELEGRAM_SUCCESS_MESSAGE = "Results sent successfully to Telegram.";
     const TELEGRAM_ERROR_MESSAGE = "Please connect Telegram first, then try again.";
     const TELEGRAM_SESSION_STORAGE_KEY = "sparklebotTelegramSessionId";
+    const normalizeList = (value) => {
+      if (Array.isArray(value)) {
+        return value;
+      }
 
+      if (typeof value === "string" && value.trim() !== "") {
+        return value
+          .split(/\n|;|,/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+
+      return [];
+    };
+
+    const layout = getElement("[data-digital-twin-layout]");
     const form = getElement("[data-digital-twin-form]");
 
     if (!form) {
@@ -242,7 +279,10 @@
     }
 
     const loading = getElement("[data-digital-twin-loading]");
+    const questionnaireToggle = getElement("[data-questionnaire-toggle]");
+    const questionnaireToggleIcon = getElement("[data-questionnaire-toggle-icon]");
     const emptyState = getElement("[data-digital-twin-empty]");
+    const generatingState = getElement("[data-digital-twin-generating]");
     const resultCard = getElement("[data-digital-twin-result]");
     const errorCard = getElement("[data-digital-twin-error]");
     const errorMessage = getElement("[data-digital-twin-error-message]");
@@ -268,6 +308,10 @@
       sendEmailButton.addEventListener("click", handleSendEmailResult);
     }
 
+    if (questionnaireToggle) {
+      questionnaireToggle.addEventListener("click", toggleQuestionnaire);
+    }
+
     if (connectTelegramButton) {
       connectTelegramButton.addEventListener("click", handleConnectTelegram);
     }
@@ -280,7 +324,7 @@
       event.preventDefault();
       console.log("Generate persona clicked");
       setLoading(true);
-      showEmptyState();
+      showGeneratingState();
 
       // Build the exact JSON shape expected by the n8n workflow.
       const formData = new FormData(form);
@@ -294,7 +338,7 @@
         investmentInterest: formData.get("investmentInterest")
       };
 
-      console.log("Using Phase 1 webhook:", import.meta.env.VITE_N8N_WEBHOOK_URL);
+      console.log("FLOW 1 WEBHOOK URL:", import.meta.env.VITE_N8N_WEBHOOK_URL);
       console.log("Sending questionnaire payload:", payload);
 
       try {
@@ -304,12 +348,17 @@
           body: JSON.stringify(payload)
         });
 
+        const rawText = await response.text();
+        console.log("RAW N8N TEXT:", rawText);
+
         if (!response.ok) {
-          throw new Error(ERROR_MESSAGE);
+          throw new Error(`Flow 1 webhook returned HTTP ${response.status}: ${rawText}`);
         }
 
-        const data = await response.json();
-        showResult(normalizeN8nResult(data));
+        const rawData = rawText ? JSON.parse(rawText) : {};
+        const data = Array.isArray(rawData) ? rawData[0] : rawData;
+        console.log("CLEAN N8N DATA:", data);
+        showResult(normalizeFlow1Result(data));
       } catch (error) {
         console.error("Persona request failed:", error);
         showError(ERROR_MESSAGE);
@@ -330,7 +379,31 @@
     }
 
     function showEmptyState() {
+      setQuestionnaireCollapsed(false);
+
+      if (layout) {
+        layout.classList.remove("has-persona");
+      }
+
       toggleHidden(emptyState, false);
+      toggleHidden(generatingState, true);
+      toggleHidden(resultCard, true);
+      toggleHidden(errorCard, true);
+      setElementText(errorMessage, "");
+      result = null;
+      finalResult = null;
+      clearResult();
+    }
+
+    function showGeneratingState() {
+      setQuestionnaireCollapsed(false);
+
+      if (layout) {
+        layout.classList.remove("has-persona");
+      }
+
+      toggleHidden(emptyState, true);
+      toggleHidden(generatingState, false);
       toggleHidden(resultCard, true);
       toggleHidden(errorCard, true);
       setElementText(errorMessage, "");
@@ -346,17 +419,56 @@
       }
 
       toggleHidden(emptyState, true);
+      toggleHidden(generatingState, true);
       toggleHidden(errorCard, true);
       result = generatedResult;
       renderResult(generatedResult);
       toggleHidden(resultCard, false);
+
+      if (layout) {
+        layout.classList.add("has-persona");
+        setQuestionnaireCollapsed(true);
+      }
     }
 
     function showError(message) {
+      setQuestionnaireCollapsed(false);
+
+      if (layout) {
+        layout.classList.remove("has-persona");
+      }
+
       toggleHidden(emptyState, true);
+      toggleHidden(generatingState, true);
       toggleHidden(resultCard, true);
       setElementText(errorMessage, message);
       toggleHidden(errorCard, false);
+    }
+
+    function toggleQuestionnaire() {
+      if (!layout || !layout.classList.contains("has-persona")) {
+        return;
+      }
+
+      setQuestionnaireCollapsed(!layout.classList.contains("questionnaire-collapsed"));
+    }
+
+    function setQuestionnaireCollapsed(isCollapsed) {
+      if (!layout || !questionnaireToggle) {
+        return;
+      }
+
+      layout.classList.toggle("questionnaire-collapsed", isCollapsed);
+      questionnaireToggle.setAttribute("aria-expanded", String(!isCollapsed));
+      questionnaireToggle.setAttribute(
+        "aria-label",
+        isCollapsed ? "Expand questionnaire" : "Collapse questionnaire"
+      );
+      questionnaireToggle.title = isCollapsed ? "Expand questionnaire" : "Collapse questionnaire";
+
+      if (questionnaireToggleIcon) {
+        questionnaireToggleIcon.innerHTML = isCollapsed ? "&#9662;" : "&#9652;";
+      }
     }
 
     function normalizeN8nResult(data) {
@@ -383,6 +495,64 @@
       }
 
       return result;
+    }
+
+    function normalizeFlow1Result(data) {
+      if (!data || typeof data !== "object") {
+        return data;
+      }
+
+      const personaSource =
+        data.persona && typeof data.persona === "object"
+          ? data.persona
+          : data;
+      const scenarioSource =
+        data.scenario && typeof data.scenario === "object"
+          ? data.scenario
+          : data;
+      const choices = Array.isArray(scenarioSource.choices)
+        ? scenarioSource.choices
+        : [
+            createFlow1Choice("A", scenarioSource.choiceA),
+            createFlow1Choice("B", scenarioSource.choiceB),
+            createFlow1Choice("C", scenarioSource.choiceC),
+            createFlow1Choice("D", scenarioSource.choiceD)
+          ].filter(Boolean);
+
+      return {
+        userId: data.userId,
+        persona: {
+          personaName: personaSource.personaName,
+          riskLevel: personaSource.riskLevel,
+          mainWeakness: personaSource.mainWeakness,
+          likelyScamTypes: personaSource.likelyScamTypes,
+          specificScamVariation: personaSource.specificScamVariation,
+          reasoning: personaSource.reasoning
+        },
+        scenario: {
+          scenarioTitle: scenarioSource.scenarioTitle,
+          scenarioText: scenarioSource.scenarioText || scenarioSource.scenarioDescription,
+          choices
+        }
+      };
+    }
+
+    function createFlow1Choice(option, value) {
+      if (value === null || value === undefined || value === "") {
+        return null;
+      }
+
+      if (typeof value === "object") {
+        return {
+          option: value.option || option,
+          text: value.text || value.label || value.choice || ""
+        };
+      }
+
+      return {
+        option,
+        text: String(value).replace(new RegExp(`^${option}[.)]\\s*`, "i"), "")
+      };
     }
 
     function parseJsonResponse(responseText) {
@@ -462,15 +632,98 @@
         });
 
         console.log("Phase 2 response status:", response.status, response.statusText);
-        const responseText = await response.text();
-        console.log("Phase 2 raw response:", responseText);
 
         if (!response.ok) {
+          const responseText = await response.text();
           throw new Error(`Phase 2 webhook returned HTTP ${response.status}: ${responseText}`);
         }
 
-        const data = parseJsonResponse(responseText);
-        renderChoiceOutcome(normalizeN8nResult(data), selectedChoice);
+        const data = await response.json();
+        const result = normalizeFlow2Result(data);
+        console.log("Flow 2 response:", result);
+
+        if (!result || typeof result !== "object") {
+          throw new Error("Phase 2 webhook returned an unsupported response.");
+        }
+
+        const outcomeData = result.outcome || result.choiceOutcome?.outcome || {};
+        const nestedFeedback =
+          result.feedback && typeof result.feedback === "object"
+            ? result.feedback
+            : null;
+        const feedbackData =
+          result.feedbackResult ||
+          result.finalResult ||
+          result.choiceOutcome?.feedback ||
+          result.choiceOutcome ||
+          nestedFeedback ||
+          result;
+
+        const redFlags =
+          [
+            result.redFlagsMissed,
+            result.red_flags_missed,
+            outcomeData.redFlagsMissed,
+            outcomeData.red_flags_missed,
+            feedbackData.redFlagsMissed,
+            feedbackData.red_flags_missed
+          ]
+            .map(normalizeList)
+            .find((items) => items.length > 0) || [];
+
+        const tips =
+          [
+            result.safetyTips,
+            result.safety_tips,
+            feedbackData.safetyTips,
+            feedbackData.safety_tips,
+            outcomeData.safetyTips,
+            outcomeData.safety_tips
+          ]
+            .map(normalizeList)
+            .find((items) => items.length > 0) || [];
+
+        setChoiceOutcome({
+          selectedChoice:
+            result.selectedChoice ||
+            outcomeData.selectedChoice ||
+            "Not returned",
+
+          outcomeSummary:
+            result.outcomeSummary ||
+            outcomeData.outcomeSummary ||
+            "Not returned",
+
+          scamRisk:
+            result.scamRisk ??
+            outcomeData.scamRisk ??
+            "Not returned",
+
+          whatHappensNext:
+            result.whatHappensNext ||
+            outcomeData.whatHappensNext ||
+            "Not returned",
+
+          redFlagsMissed: redFlags,
+
+          feedback:
+            result.feedback ||
+            feedbackData.feedback ||
+            "Not returned",
+
+          safetyTips: tips,
+
+          score:
+            result.score ??
+            feedbackData.score ??
+            "Not returned",
+
+          readinessLevel:
+            result.readinessLevel ||
+            feedbackData.readinessLevel ||
+            result.readiness_level ||
+            "Not returned"
+        });
       } catch (error) {
         console.error("Choice request failed:", error);
         showChoiceError(CHOICE_ERROR_MESSAGE);
@@ -487,26 +740,65 @@
       });
     }
 
-    function renderChoiceOutcome(choiceResult, selectedChoice) {
+    function normalizeFlow2Result(data) {
+      let value = data;
+
+      for (let depth = 0; depth < 5; depth += 1) {
+        if (Array.isArray(value)) {
+          value = value[0];
+          continue;
+        }
+
+        if (typeof value === "string") {
+          try {
+            value = JSON.parse(value);
+            continue;
+          } catch (error) {
+            return value;
+          }
+        }
+
+        if (!value || typeof value !== "object") {
+          return value;
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(value, "selectedChoice") ||
+          Object.prototype.hasOwnProperty.call(value, "outcomeSummary") ||
+          Object.prototype.hasOwnProperty.call(value, "scamRisk")
+        ) {
+          return value;
+        }
+
+        const wrappedValue = value.json ?? value.body ?? value.data ?? value.output;
+
+        if (wrappedValue === undefined) {
+          return value;
+        }
+
+        value = wrappedValue;
+      }
+
+      return value;
+    }
+
+    function setChoiceOutcome(choiceResult) {
       if (!choiceResult || typeof choiceResult !== "object") {
         showChoiceError(CHOICE_ERROR_MESSAGE);
         return;
       }
 
-      const outcome = choiceResult.outcome || {};
-      const feedback = choiceResult.feedback || {};
-
       toggleHidden(choiceError, true);
-      setText("[data-selected-choice]", choiceResult.selectedChoice || selectedChoice);
-      setText("[data-outcome-summary]", outcome.outcomeSummary);
-      setText("[data-scam-risk]", outcome.scamRisk);
-      setText("[data-what-happens-next]", outcome.whatHappensNext);
-      renderList("[data-red-flags-missed]", outcome.redFlagsMissed);
-      setText("[data-choice-feedback]", feedback.feedback);
-      renderList("[data-safety-tips]", feedback.safetyTips);
-      setText("[data-choice-score]", feedback.score);
-      setText("[data-readiness-level]", feedback.readinessLevel);
-      finalResult = buildFinalResult(choiceResult, selectedChoice);
+      setText("[data-selected-choice]", choiceResult.selectedChoice);
+      setText("[data-outcome-summary]", choiceResult.outcomeSummary);
+      setText("[data-scam-risk]", choiceResult.scamRisk ?? "Not returned");
+      setText("[data-what-happens-next]", choiceResult.whatHappensNext || "Not returned");
+      renderList("[data-red-flags-missed]", choiceResult.redFlagsMissed);
+      setText("[data-choice-feedback]", choiceResult.feedback);
+      renderList("[data-safety-tips]", choiceResult.safetyTips);
+      setText("[data-choice-score]", choiceResult.score);
+      setText("[data-readiness-level]", choiceResult.readinessLevel);
+      finalResult = buildFinalResult(choiceResult);
       clearEmailMessages();
       clearTelegramMessages();
       toggleHidden(choiceOutcome, false);
@@ -583,11 +875,9 @@
       }
     }
 
-    function buildFinalResult(choiceResult, selectedChoice) {
+    function buildFinalResult(choiceResult) {
       const persona = (result && result.persona) || {};
       const scenario = (result && result.scenario) || {};
-      const outcome = choiceResult.outcome || {};
-      const feedback = choiceResult.feedback || {};
 
       return {
         personaName: persona.personaName,
@@ -595,10 +885,10 @@
         likelyScamTypes: formatScamTypes(persona.likelyScamTypes),
         scenarioTitle: scenario.scenarioTitle,
         scenarioText: scenario.scenarioText,
-        selectedChoice: choiceResult.selectedChoice || selectedChoice,
-        outcomeSummary: outcome.outcomeSummary,
-        feedback: feedback.feedback,
-        score: feedback.score
+        selectedChoice: choiceResult.selectedChoice,
+        outcomeSummary: choiceResult.outcomeSummary,
+        feedback: choiceResult.feedback,
+        score: choiceResult.score
       };
     }
 
@@ -801,9 +1091,22 @@
     }
 
     function clearResult() {
-      document.querySelectorAll("[data-digital-twin-result] dd, [data-scenario-title], [data-scenario-text]").forEach((element) => {
-        element.textContent = "";
-      });
+      document
+        .querySelectorAll(
+          [
+            "[data-persona-name]",
+            "[data-risk-level]",
+            "[data-main-weakness]",
+            "[data-likely-scam-types]",
+            "[data-specific-scam-variation]",
+            "[data-reasoning]",
+            "[data-scenario-title]",
+            "[data-scenario-text]"
+          ].join(", ")
+        )
+        .forEach((element) => {
+          element.textContent = "";
+        });
 
       replaceChildrenSafe(getElement("[data-choice-list]"));
       clearChoiceOutcome();
