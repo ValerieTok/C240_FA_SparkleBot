@@ -198,11 +198,11 @@ function parseAnalysisResponse(responseText) {
     throw new Error("n8n scam analysis returned an empty response.");
   }
 
-  const parsed = parseJsonMaybe(trimmedText);
+  const parsed = parseJsonMaybe(stripCodeFence(trimmedText));
   const result = Array.isArray(parsed) ? parsed[0] : parsed;
 
   if (typeof result === "string") {
-    return parseJsonMaybe(result);
+    return parseJsonMaybe(stripCodeFence(result));
   }
 
   if (!result || typeof result !== "object") {
@@ -298,29 +298,38 @@ function hasAnalysisFields(value) {
   return Boolean(
     value &&
       typeof value === "object" &&
-      (value.riskLevel || value.risk_level || value.risk || value.score || value.aiRiskScore || value.ai_risk_score) &&
       (
-        value.scamType ||
-        value.scam_type ||
-        value.type ||
-        value.category ||
-        value.learningTopics ||
-        value.learning_topics ||
-        value.suggestedQuestions ||
-        value.suggested_questions ||
-        value.redFlags ||
-        value.red_flags ||
-        value.reasons ||
-        value.indicators
+        hasUsefulAnalysisValue(getAnalysisField(value, RISK_LEVEL_FIELDS)) ||
+        hasUsefulAnalysisValue(getAnalysisField(value, SCORE_FIELDS)) ||
+        hasUsefulAnalysisValue(getAnalysisField(value, IS_SCAM_FIELDS))
+      ) &&
+      (
+        hasUsefulAnalysisValue(getAnalysisField(value, SCAM_TYPE_FIELDS)) ||
+        hasUsefulAnalysisValue(getAnalysisField(value, RED_FLAG_FIELDS)) ||
+        hasUsefulAnalysisValue(getAnalysisField(value, CONTEXT_FIELDS))
       )
   );
 }
 
 function parseJsonMaybe(value) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
   try {
     return JSON.parse(value);
   } catch (error) {
-    return value;
+    const jsonText = extractJsonText(value);
+
+    if (jsonText && jsonText !== value) {
+      try {
+        return JSON.parse(jsonText);
+      } catch (nestedError) {
+        return parseTextAnalysis(value);
+      }
+    }
+
+    return parseTextAnalysis(value);
   }
 }
 
@@ -332,47 +341,153 @@ function stripCodeFence(value) {
     .trim();
 }
 
+function extractJsonText(value) {
+  const text = String(value || "").trim();
+  const objectStart = text.indexOf("{");
+  const objectEnd = text.lastIndexOf("}");
+
+  if (objectStart !== -1 && objectEnd > objectStart) {
+    return text.slice(objectStart, objectEnd + 1);
+  }
+
+  const arrayStart = text.indexOf("[");
+  const arrayEnd = text.lastIndexOf("]");
+
+  if (arrayStart !== -1 && arrayEnd > arrayStart) {
+    return text.slice(arrayStart, arrayEnd + 1);
+  }
+
+  return "";
+}
+
+function parseTextAnalysis(value) {
+  const text = String(value || "").trim();
+
+  if (!text) {
+    return text;
+  }
+
+  const riskLevel = matchLabeledValue(text, /risk\s*level|risk/i);
+  const scamType = matchLabeledValue(text, /(?:possible\s+)?scam\s*type|type|category/i);
+  const score = matchLabeledValue(text, /(?:scam\s*)?score|risk\s*score|final\s*score/i);
+  const isScam = matchLabeledValue(text, /(?:is\s*)?scam\s*detected|is\s*scam|final\s*is\s*scam/i);
+  const redFlagsText = matchLabeledBlock(text, /red\s*flags?|reasons?|indicators?/i, /recommended\s*action|advice|next\s*steps?/i);
+  const recommendedAction = matchLabeledValue(text, /recommended\s*action|advice|next\s*steps?/i);
+
+  const parsed = {
+    riskLevel,
+    scamType,
+    score,
+    isScam,
+    redFlags: splitListText(redFlagsText),
+    recommendedAction,
+    reason: text
+  };
+
+  return hasAnalysisFields(parsed) ? parsed : text;
+}
+
+function matchLabeledValue(text, labelPattern) {
+  const match = text.match(new RegExp(`(?:^|\\n)\\s*(?:[-*]\\s*)?(?:${labelPattern.source})\\s*[:=-]\\s*([^\\n]+)`, "i"));
+
+  return match ? match[1].trim() : "";
+}
+
+function matchLabeledBlock(text, labelPattern, stopPattern) {
+  const match = text.match(new RegExp(`(?:^|\\n)\\s*(?:[-*]\\s*)?(?:${labelPattern.source})\\s*[:=-]\\s*([\\s\\S]*?)(?=\\n\\s*(?:[-*]\\s*)?(?:${stopPattern.source})\\s*[:=-]|$)`, "i"));
+
+  return match ? match[1].trim() : "";
+}
+
+const RISK_LEVEL_FIELDS = ["riskLevel", "risk_level", "risk", "Risk Level", "Scam Risk", "scamRisk"];
+const SCORE_FIELDS = [
+  "score",
+  "finalScore",
+  "final_score",
+  "riskScore",
+  "risk_score",
+  "finalRiskScore",
+  "final_risk_score",
+  "aiRiskScore",
+  "ai_risk_score",
+  "Scam Score",
+  "Risk Score",
+  "Final Score"
+];
+const IS_SCAM_FIELDS = ["isScam", "is_scam", "finalIsScam", "final_is_scam", "Scam Detected", "scamDetected"];
+const SCAM_TYPE_FIELDS = ["scamType", "scam_type", "type", "category", "Possible Scam Type", "Scam Type"];
+const RED_FLAG_FIELDS = ["redFlags", "red_flags", "flags", "reasons", "indicators", "Red Flags", "warningSigns"];
+const ACTION_FIELDS = ["recommendedAction", "recommended_action", "action", "advice", "Recommended Action", "Next Steps"];
+const CONTEXT_FIELDS = [
+  "reason",
+  "justification",
+  "explanation",
+  "summary",
+  "learningTopics",
+  "learning_topics",
+  "suggestedQuestions",
+  "suggested_questions"
+];
+
+function getAnalysisField(source, aliases) {
+  if (!source || typeof source !== "object") {
+    return undefined;
+  }
+
+  for (const alias of aliases) {
+    if (source[alias] !== undefined) {
+      return source[alias];
+    }
+  }
+
+  const normalizedAliases = new Set(aliases.map(normalizeFieldName));
+  const matchingKey = Object.keys(source).find((key) => normalizedAliases.has(normalizeFieldName(key)));
+
+  return matchingKey ? source[matchingKey] : undefined;
+}
+
+function normalizeFieldName(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function hasUsefulAnalysisValue(value) {
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+
+  return value !== undefined && value !== null && String(value).trim() !== "";
+}
+
 function normalizeAnalysis(result) {
-  if (!result || typeof result !== "object" || !hasAnalysisFields(result)) {
+  if (!result || (typeof result !== "object" && typeof result !== "string")) {
     throw new Error("n8n scam analysis response is missing required analysis fields.");
   }
 
+  if (typeof result === "string") {
+    return normalizeFallbackAnalysis(result);
+  }
+
+  if (!hasAnalysisFields(result)) {
+    console.warn("n8n scam analysis response did not match known fields; using fallback analysis:", previewValue(result));
+    return normalizeFallbackAnalysis(result);
+  }
+
   const redFlags =
-    result.redFlags ||
-    result.red_flags ||
-    result.flags ||
-    result.reasons ||
-    result.indicators ||
+    getAnalysisField(result, RED_FLAG_FIELDS) ||
+    getAnalysisField(result, CONTEXT_FIELDS) ||
     [];
-  const riskLevel = normalizeRiskLevel(result.riskLevel || result.risk_level || result.risk);
   const rawScore =
-    result.score ??
-    result.finalScore ??
-    result.final_score ??
-    result.riskScore ??
-    result.risk_score ??
-    result.finalRiskScore ??
-    result.final_risk_score ??
-    result.aiRiskScore ??
-    result.ai_risk_score;
+    getAnalysisField(result, SCORE_FIELDS);
+  const riskLevel = normalizeRiskLevel(getAnalysisField(result, RISK_LEVEL_FIELDS), rawScore);
   const score = normalizeScore(rawScore, riskLevel);
-  const rawIsScam =
-    result.isScam ??
-    result.is_scam ??
-    result.finalIsScam ??
-    result.final_is_scam;
+  const rawIsScam = getAnalysisField(result, IS_SCAM_FIELDS);
   const isScam = normalizeIsScam(rawIsScam, riskLevel, score);
   const extractedText = normalizeExtractedText(result);
 
   return {
     riskLevel,
     scamType: normalizeScamType(result),
-    redFlags: Array.isArray(redFlags)
-      ? redFlags.map(String)
-      : String(redFlags || "")
-          .split(/\r?\n|,\s*/)
-          .map((flag) => flag.trim())
-          .filter(Boolean),
+    redFlags: normalizeRedFlags(redFlags),
     recommendedAction: normalizeRecommendedAction(result),
     extractedText,
     message: String(result.message || result.content || extractedText || ""),
@@ -383,12 +498,86 @@ function normalizeAnalysis(result) {
   };
 }
 
+function normalizeFallbackAnalysis(result) {
+  const text = stringifyFallbackAnalysis(result);
+  const parsedText = parseTextAnalysis(text);
+  const parsed = parsedText && typeof parsedText === "object" ? parsedText : { reason: text };
+  const rawScore = getAnalysisField(parsed, SCORE_FIELDS);
+  const riskLevel = normalizeRiskLevel(getAnalysisField(parsed, RISK_LEVEL_FIELDS) || inferRiskLevelFromText(text), rawScore);
+  const score = normalizeScore(rawScore, riskLevel);
+  const parsedRedFlags = getAnalysisField(parsed, RED_FLAG_FIELDS);
+  const redFlags = normalizeRedFlags(
+    hasUsefulAnalysisValue(parsedRedFlags) ? parsedRedFlags : getAnalysisField(parsed, CONTEXT_FIELDS) || text
+  );
+
+  return {
+    riskLevel,
+    scamType: normalizeScamType(parsed),
+    redFlags,
+    recommendedAction: normalizeRecommendedAction(parsed),
+    extractedText: "",
+    message: text,
+    contentType: "",
+    source: "",
+    score,
+    isScam: normalizeIsScam(getAnalysisField(parsed, IS_SCAM_FIELDS), riskLevel, score)
+  };
+}
+
+function stringifyFallbackAnalysis(value) {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+
+  return Object.entries(value)
+    .map(([key, fieldValue]) => `${key}: ${formatFallbackValue(fieldValue)}`)
+    .filter((line) => line.trim())
+    .join("\n")
+    .trim();
+}
+
+function formatFallbackValue(value) {
+  if (Array.isArray(value)) {
+    return value.map(formatFallbackValue).filter(Boolean).join(", ");
+  }
+
+  if (value && typeof value === "object") {
+    return stringifyFallbackAnalysis(value);
+  }
+
+  return String(value || "").trim();
+}
+
+function previewValue(value) {
+  return stringifyFallbackAnalysis(value).slice(0, 1000);
+}
+
+function normalizeRedFlags(value) {
+  if (Array.isArray(value)) {
+    return value.map(String).map((flag) => flag.trim()).filter(Boolean);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.values(value).flatMap(normalizeRedFlags);
+  }
+
+  return splitListText(value);
+}
+
+function splitListText(value) {
+  return String(value || "")
+    .split(/\r?\n|,\s*|;\s*/)
+    .map((flag) => flag.replace(/^[-*\d.)\s]+/, "").trim())
+    .filter(Boolean);
+}
+
 function normalizeRecommendedAction(result) {
   const explicitAction =
-    result.recommendedAction ||
-    result.recommended_action ||
-    result.action ||
-    result.advice;
+    getAnalysisField(result, ACTION_FIELDS);
 
   if (explicitAction) {
     return String(explicitAction).trim();
@@ -400,7 +589,10 @@ function normalizeRecommendedAction(result) {
     return "Do not click the link or provide personal information. Verify through the official website or app, then block and report the sender.";
   }
 
-  if (result.isScam === true || normalizeScore(result.score ?? result.aiRiskScore ?? result.ai_risk_score, "") >= 70) {
+  if (
+    getAnalysisField(result, IS_SCAM_FIELDS) === true ||
+    normalizeScore(getAnalysisField(result, SCORE_FIELDS), "") >= 70
+  ) {
     return "Do not continue with the request. Verify through an official source and report the suspicious message.";
   }
 
@@ -408,7 +600,7 @@ function normalizeRecommendedAction(result) {
 }
 
 function normalizeScamType(result) {
-  const explicitType = result.scamType || result.scam_type || result.type;
+  const explicitType = getAnalysisField(result, SCAM_TYPE_FIELDS);
 
   if (explicitType) {
     return String(explicitType).trim();
@@ -420,7 +612,7 @@ function normalizeScamType(result) {
     return inferredType;
   }
 
-  return String(result.category || "Unknown").trim() || "Unknown";
+  return String(getAnalysisField(result, ["category"]) || "Unknown").trim() || "Unknown";
 }
 
 function inferScamType(result) {
@@ -479,6 +671,35 @@ function inferScamType(result) {
   return "";
 }
 
+function inferRiskLevelFromText(value) {
+  const text = String(value || "").toLowerCase();
+
+  if (text.includes("high risk") || text.includes("risk level: high") || text.includes("risk: high")) {
+    return "High";
+  }
+
+  if (
+    text.includes("medium risk") ||
+    text.includes("moderate risk") ||
+    text.includes("risk level: medium") ||
+    text.includes("risk: medium") ||
+    text.includes("risk level: moderate") ||
+    text.includes("risk: moderate")
+  ) {
+    return "Medium";
+  }
+
+  if (text.includes("low risk") || text.includes("risk level: low") || text.includes("risk: low")) {
+    return "Low";
+  }
+
+  if (text.includes("scam") || text.includes("phishing") || text.includes("suspicious")) {
+    return "High";
+  }
+
+  return "Unknown";
+}
+
 function normalizeExtractedText(result) {
   const value =
     result.extractedText ??
@@ -505,7 +726,7 @@ function normalizeExtractedText(result) {
   return String(value || "").trim();
 }
 
-function normalizeRiskLevel(value) {
+function normalizeRiskLevel(value, scoreValue) {
   const riskLevel = String(value || "").trim().toLowerCase();
 
   if (riskLevel.includes("high")) {
@@ -520,11 +741,25 @@ function normalizeRiskLevel(value) {
     return "Low";
   }
 
+  const score = parseNumericScore(scoreValue);
+
+  if (Number.isFinite(score)) {
+    if (score >= 70) {
+      return "High";
+    }
+
+    if (score >= 40) {
+      return "Medium";
+    }
+
+    return "Low";
+  }
+
   return String(value || "Unknown").trim() || "Unknown";
 }
 
 function normalizeScore(value, riskLevel) {
-  const score = Number(value);
+  const score = parseNumericScore(value);
 
   if (Number.isFinite(score)) {
     return Math.max(0, Math.min(100, Math.round(score)));
@@ -543,6 +778,32 @@ function normalizeScore(value, riskLevel) {
   }
 
   return null;
+}
+
+function parseNumericScore(value) {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  const text = String(value || "").trim();
+  const percentageMatch = text.match(/(\d+(?:\.\d+)?)\s*%/);
+
+  if (percentageMatch) {
+    return Number(percentageMatch[1]);
+  }
+
+  const ratioMatch = text.match(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/);
+
+  if (ratioMatch) {
+    const numerator = Number(ratioMatch[1]);
+    const denominator = Number(ratioMatch[2]);
+
+    return denominator ? (numerator / denominator) * 100 : NaN;
+  }
+
+  const numberMatch = text.match(/\d+(?:\.\d+)?/);
+
+  return numberMatch ? Number(numberMatch[0]) : NaN;
 }
 
 function normalizeIsScam(value, riskLevel, score) {
