@@ -1,0 +1,72 @@
+<section class="page-hero compact">
+  <h1><%= page.heading %></h1>
+  <p><%= page.description %></p>
+</section>
+
+<section class="tool-panel feedback-dashboard-layout">
+  <% if (feedbackDashboardError) { %>
+    <p class="form-status error"><%= feedbackDashboardError %></p>
+  <% } %>
+
+  <section class="feedback-dashboard-kpi-grid" aria-label="Feedback summary">
+    <article class="card feedback-kpi-card">
+      <p class="feedback-kpi-label">Total Feedback</p>
+      <strong class="feedback-kpi-value"><%= analytics.totalSubmissions %></strong>
+    </article>
+
+    <article class="card feedback-kpi-card">
+      <p class="feedback-kpi-label">Satisfaction Rate</p>
+      <strong class="feedback-kpi-value"><%= analytics.helpfulPercentage %>%</strong>
+    </article>
+
+    <article class="card feedback-kpi-card">
+      <p class="feedback-kpi-label">Helpful</p>
+      <strong class="feedback-kpi-value"><%= analytics.helpful %></strong>
+    </article>
+
+    <article class="card feedback-kpi-card">
+      <p class="feedback-kpi-label">Not Helpful</p>
+      <strong class="feedback-kpi-value"><%= analytics.notHelpful %></strong>
+    </article>
+  </section>
+
+  <section class="feedback-dashboard-columns" aria-label="Feedback details">
+    <article class="card feedback-satisfaction-card">
+      <h2>Satisfaction Progress</h2>
+      <p class="feedback-satisfaction-text">
+        <strong><%= analytics.helpfulPercentage %>%</strong> of users marked SparkleBot as helpful.
+      </p>
+      <div class="feedback-progress-track" role="progressbar" aria-label="Satisfaction rate" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= analytics.helpfulPercentage %>">
+        <div class="feedback-progress-fill" style="width: <%= analytics.helpfulPercentage %>%;"></div>
+      </div>
+      <div class="feedback-progress-legend">
+        <span>Helpful: <strong><%= analytics.helpful %></strong></span>
+        <span>Not Helpful: <strong><%= analytics.notHelpful %></strong></span>
+      </div>
+    </article>
+
+    <article class="card feedback-live-feed-card">
+      <h2>Live Feedback Feed</h2>
+
+      <% if (!analytics.liveFeed.length) { %>
+        <p class="feedback-feed-empty">No live feedback entries yet.</p>
+      <% } else { %>
+        <div class="feedback-feed-list" role="list">
+          <% analytics.liveFeed.forEach((entry) => { %>
+            <article class="feedback-feed-item" role="listitem">
+              <div class="feedback-feed-meta-row">
+                <span class="feedback-status-badge <%= entry.statusClass %>"><%= entry.statusLabel %></span>
+                <% if (entry.submittedAt) { %>
+                  <time class="feedback-feed-time"><%= entry.submittedAt %></time>
+                <% } %>
+              </div>
+
+              <p class="feedback-feed-comment"><%= entry.comment %></p>
+              <p class="feedback-ai-summary"><%= entry.aiSummary %></p>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </article>
+  </section>
+</section>

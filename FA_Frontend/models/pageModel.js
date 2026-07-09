@@ -2,6 +2,7 @@ const pages = {
   home: {
     heading: "SparkleBot",
     tagline: "Think Before You Click",
+    videoSrc: "/uploads/home-intro.mp4",
     description:
       "An AI-powered anti-scam portal that helps users check suspicious text, URLs, screenshots, and get practical scam guidance from SparkleBot."
   },
@@ -29,6 +30,11 @@ const pages = {
     heading: "Feedback",
     description:
       "Share whether SparkleBot was helpful and what should be improved."
+  },
+  feedbackDashboard: {
+    heading: "Feedback Dashboard",
+    description:
+      "Track satisfaction trends and live user comments processed by n8n."
   },
   about: {
     heading: "About AI",
