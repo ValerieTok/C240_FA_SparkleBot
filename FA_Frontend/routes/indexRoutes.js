@@ -68,6 +68,7 @@ router.post("/report-scam", reportController.submitReport);
 router.get("/admin/scam-trends", scamTrendsController.showDashboard);
 router.get("/feedback", feedbackController.showFeedback);
 router.post("/feedback", feedbackController.submitFeedback);
+router.get("/feedback-dashboard", feedbackController.getFeedbackDashboard);
 router.get("/about", aboutController.showAbout);
 
 module.exports = router;

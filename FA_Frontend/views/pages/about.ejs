@@ -5,14 +5,15 @@
 
 <section class="content-section">
   <div class="section-heading">
-    <h2>Tools Used</h2>
-    <p>These tools support chatbot creation, AI experiments, research, and development.</p>
+    <h2>Website Functions</h2>
+    <p>SparkleBot brings scam checking, guidance, reporting, trend review, and feedback into one anti-scam portal.</p>
   </div>
   <div class="card-grid">
-    <% tools.forEach((tool) => { %>
+    <% websiteFunctions.forEach((websiteFunction) => { %>
       <article class="card">
-        <h3><%= tool.name %></h3>
-        <p><%= tool.purpose %></p>
+        <h3><%= websiteFunction.name %></h3>
+        <p><%= websiteFunction.description %></p>
+        <a class="text-link" href="<%= websiteFunction.link %>"><%= websiteFunction.linkText %></a>
       </article>
     <% }) %>
   </div>
@@ -20,14 +21,14 @@
 
 <section class="content-section">
   <div class="section-heading">
-    <h2>AI Structures</h2>
-    <p>Key AI concepts used in the SparkleBot experience.</p>
+    <h2>How The AI Supports The Website</h2>
+    <p>The AI features are focused on helping users understand suspicious content and make safer decisions.</p>
   </div>
   <div class="card-grid">
-    <% structures.forEach((structure) => { %>
+    <% aiWorkflow.forEach((step) => { %>
       <article class="card">
-        <h3><%= structure.name %></h3>
-        <p><%= structure.explanation %></p>
+        <h3><%= step.name %></h3>
+        <p><%= step.description %></p>
       </article>
     <% }) %>
   </div>

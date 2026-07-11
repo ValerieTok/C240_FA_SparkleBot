@@ -3,77 +3,91 @@
   <p>Answer a short questionnaire to generate a scam persona and practice scenario based on your online habits.</p>
 </section>
 
-<section class="tool-panel detector-layout digital-twin-layout">
+<section class="tool-panel detector-layout digital-twin-layout" data-digital-twin-layout>
   <form class="form-card detector-card digital-twin-card" data-digital-twin-form>
-    <p class="form-note">Testing note: Start the n8n webhook listener before submitting.</p>
+    <button
+      class="questionnaire-toggle"
+      type="button"
+      data-questionnaire-toggle
+      aria-expanded="true"
+      aria-label="Collapse questionnaire"
+      title="Collapse questionnaire"
+    >
+      <span>Questionnaire</span>
+      <span class="questionnaire-toggle-icon" data-questionnaire-toggle-icon aria-hidden="true">&#9652;</span>
+    </button>
 
-    <div class="question-grid">
-      <div>
-        <label for="ageGroup">Age group</label>
-        <select id="ageGroup" name="ageGroup" required>
-          <option value="">Choose an option</option>
-          <option value="student">Student</option>
-          <option value="working adult">Working adult</option>
-          <option value="senior">Senior</option>
-          <option value="general user">General user</option>
-        </select>
+    <div class="questionnaire-content">
+      <p class="form-note">Testing note: Start the n8n webhook listener before submitting.</p>
+
+      <div class="question-grid">
+        <div>
+          <label for="ageGroup">Age group</label>
+          <select id="ageGroup" name="ageGroup" required>
+            <option value="">Choose an option</option>
+            <option value="student">Student</option>
+            <option value="working adult">Working adult</option>
+            <option value="senior">Senior</option>
+            <option value="general user">General user</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="onlineShopping">How often do you shop online?</label>
+          <select id="onlineShopping" name="onlineShopping" required>
+            <option value="">Choose an option</option>
+            <option value="often">Often</option>
+            <option value="sometimes">Sometimes</option>
+            <option value="rarely">Rarely</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="respondsToUrgency">Do urgent messages make you respond quickly?</label>
+          <select id="respondsToUrgency" name="respondsToUrgency" required>
+            <option value="">Choose an option</option>
+            <option value="yes">Yes</option>
+            <option value="sometimes">Sometimes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="interestedInJobs">Are you interested in online job offers?</label>
+          <select id="interestedInJobs" name="interestedInJobs" required>
+            <option value="">Choose an option</option>
+            <option value="yes">Yes</option>
+            <option value="sometimes">Sometimes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="checksLinks">Do you check links before clicking?</label>
+          <select id="checksLinks" name="checksLinks" required>
+            <option value="">Choose an option</option>
+            <option value="always">Always</option>
+            <option value="sometimes">Sometimes</option>
+            <option value="rarely">Rarely</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="investmentInterest">Interest in investment opportunities</label>
+          <select id="investmentInterest" name="investmentInterest" required>
+            <option value="">Choose an option</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
       </div>
 
-      <div>
-        <label for="onlineShopping">How often do you shop online?</label>
-        <select id="onlineShopping" name="onlineShopping" required>
-          <option value="">Choose an option</option>
-          <option value="often">Often</option>
-          <option value="sometimes">Sometimes</option>
-          <option value="rarely">Rarely</option>
-        </select>
+      <button class="btn btn-primary" type="submit">Generate My Scam Persona</button>
+      <div class="analysis-loading hidden" data-digital-twin-loading role="status" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>Generating your scam persona...</span>
       </div>
-
-      <div>
-        <label for="respondsToUrgency">Do urgent messages make you respond quickly?</label>
-        <select id="respondsToUrgency" name="respondsToUrgency" required>
-          <option value="">Choose an option</option>
-          <option value="yes">Yes</option>
-          <option value="sometimes">Sometimes</option>
-          <option value="no">No</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="interestedInJobs">Are you interested in online job offers?</label>
-        <select id="interestedInJobs" name="interestedInJobs" required>
-          <option value="">Choose an option</option>
-          <option value="yes">Yes</option>
-          <option value="sometimes">Sometimes</option>
-          <option value="no">No</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="checksLinks">Do you check links before clicking?</label>
-        <select id="checksLinks" name="checksLinks" required>
-          <option value="">Choose an option</option>
-          <option value="always">Always</option>
-          <option value="sometimes">Sometimes</option>
-          <option value="rarely">Rarely</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="investmentInterest">Interest in investment opportunities</label>
-        <select id="investmentInterest" name="investmentInterest" required>
-          <option value="">Choose an option</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-      </div>
-    </div>
-
-    <button class="btn btn-primary" type="submit">Generate My Scam Persona</button>
-    <div class="analysis-loading hidden" data-digital-twin-loading role="status" aria-live="polite">
-      <span class="loading-spinner" aria-hidden="true"></span>
-      <span>Generating your scam persona...</span>
     </div>
   </form>
 
@@ -81,6 +95,14 @@
     <article class="empty-results" data-digital-twin-empty>
       <span class="loading-spinner idle" aria-hidden="true"></span>
       <p>Your AI digital twin result will appear here</p>
+    </article>
+
+    <article class="result-card generation-card hidden" data-digital-twin-generating>
+      <div class="analysis-loading" role="status" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>Generating your AI scam persona...</span>
+      </div>
+      <p>Building your persona, risk profile, scam scenario, and practice choices.</p>
     </article>
 
     <article class="result-card hidden" data-digital-twin-result>
@@ -168,6 +190,37 @@
             <dd data-readiness-level></dd>
           </div>
         </dl>
+
+        <div class="email-result-panel" data-email-result-section>
+          <h3>Send Result to Email</h3>
+          <label for="resultEmail">Email address</label>
+          <input id="resultEmail" type="email" data-result-email placeholder="name@example.com" autocomplete="email">
+          <button class="btn btn-primary" type="button" data-send-email-result>Send Result to Email</button>
+          <div class="analysis-loading hidden" data-email-loading role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span>Sending result...</span>
+          </div>
+          <p class="form-status success hidden" data-email-success></p>
+          <p class="form-status error hidden" data-email-error></p>
+        </div>
+
+        <div class="telegram-result-panel" data-telegram-result-section>
+          <h3>Send Result to Telegram</h3>
+          <div class="telegram-step">
+            <strong>Step 1: Connect Telegram</strong>
+            <button class="btn btn-primary" type="button" data-connect-telegram>Connect Telegram</button>
+          </div>
+          <div class="telegram-step">
+            <strong>Step 2: Send result</strong>
+            <button class="btn btn-primary" type="button" data-send-telegram-result>Send Result to Telegram</button>
+          </div>
+          <div class="analysis-loading hidden" data-telegram-loading role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span>Sending result...</span>
+          </div>
+          <p class="form-status success hidden" data-telegram-success></p>
+          <p class="form-status error hidden" data-telegram-error></p>
+        </div>
       </div>
     </article>
 
@@ -186,10 +239,39 @@
       import.meta.env.VITE_N8N_WEBHOOK_URL || <%- JSON.stringify(personaWebhookUrl) %>;
     import.meta.env.VITE_N8N_CHOICE_WEBHOOK_URL =
       import.meta.env.VITE_N8N_CHOICE_WEBHOOK_URL || <%- JSON.stringify(choiceWebhookUrl) %>;
+    import.meta.env.VITE_N8N_EMAIL_WEBHOOK_URL =
+      import.meta.env.VITE_N8N_EMAIL_WEBHOOK_URL ||
+      <%- JSON.stringify(typeof emailWebhookUrl === "undefined" ? "" : emailWebhookUrl) %>;
+    import.meta.env.NEXT_PUBLIC_N8N_TELEGRAM_WEBHOOK_URL =
+      import.meta.env.NEXT_PUBLIC_N8N_TELEGRAM_WEBHOOK_URL ||
+      <%- JSON.stringify(typeof telegramWebhookUrl === "undefined" ? "" : telegramWebhookUrl) %>;
+    import.meta.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME =
+      import.meta.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ||
+      <%- JSON.stringify(typeof telegramBotUsername === "undefined" ? "" : telegramBotUsername) %>;
 
     const ERROR_MESSAGE = "Unable to generate scam persona. Please make sure the n8n webhook is listening and try again.";
     const CHOICE_ERROR_MESSAGE = "Unable to simulate choice. Please make sure the second n8n webhook is listening and try again.";
+    const EMAIL_SUCCESS_MESSAGE = "Results sent successfully to your email.";
+    const EMAIL_ERROR_MESSAGE = "Unable to send results. Please try again.";
+    const TELEGRAM_SUCCESS_MESSAGE = "Results sent successfully to Telegram.";
+    const TELEGRAM_ERROR_MESSAGE = "Please connect Telegram first, then try again.";
+    const TELEGRAM_SESSION_STORAGE_KEY = "sparklebotTelegramSessionId";
+    const normalizeList = (value) => {
+      if (Array.isArray(value)) {
+        return value;
+      }
 
+      if (typeof value === "string" && value.trim() !== "") {
+        return value
+          .split(/\n|;|,/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+
+      return [];
+    };
+
+    const layout = getElement("[data-digital-twin-layout]");
     const form = getElement("[data-digital-twin-form]");
 
     if (!form) {
@@ -197,7 +279,10 @@
     }
 
     const loading = getElement("[data-digital-twin-loading]");
+    const questionnaireToggle = getElement("[data-questionnaire-toggle]");
+    const questionnaireToggleIcon = getElement("[data-questionnaire-toggle-icon]");
     const emptyState = getElement("[data-digital-twin-empty]");
+    const generatingState = getElement("[data-digital-twin-generating]");
     const resultCard = getElement("[data-digital-twin-result]");
     const errorCard = getElement("[data-digital-twin-error]");
     const errorMessage = getElement("[data-digital-twin-error-message]");
@@ -205,13 +290,41 @@
     const choiceLoading = getElement("[data-choice-loading]");
     const choiceError = getElement("[data-choice-error]");
     const choiceOutcome = getElement("[data-choice-outcome]");
+    const resultEmailInput = getElement("[data-result-email]");
+    const sendEmailButton = getElement("[data-send-email-result]");
+    const emailLoading = getElement("[data-email-loading]");
+    const emailSuccess = getElement("[data-email-success]");
+    const emailError = getElement("[data-email-error]");
+    const connectTelegramButton = getElement("[data-connect-telegram]");
+    const sendTelegramButton = getElement("[data-send-telegram-result]");
+    const telegramLoading = getElement("[data-telegram-loading]");
+    const telegramSuccess = getElement("[data-telegram-success]");
+    const telegramError = getElement("[data-telegram-error]");
+    const sessionId = getOrCreateTelegramSessionId();
     let result = null;
+    let finalResult = null;
+
+    if (sendEmailButton) {
+      sendEmailButton.addEventListener("click", handleSendEmailResult);
+    }
+
+    if (questionnaireToggle) {
+      questionnaireToggle.addEventListener("click", toggleQuestionnaire);
+    }
+
+    if (connectTelegramButton) {
+      connectTelegramButton.addEventListener("click", handleConnectTelegram);
+    }
+
+    if (sendTelegramButton) {
+      sendTelegramButton.addEventListener("click", handleSendTelegramResult);
+    }
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       console.log("Generate persona clicked");
       setLoading(true);
-      showEmptyState();
+      showGeneratingState();
 
       // Build the exact JSON shape expected by the n8n workflow.
       const formData = new FormData(form);
@@ -225,7 +338,7 @@
         investmentInterest: formData.get("investmentInterest")
       };
 
-      console.log("Using Phase 1 webhook:", import.meta.env.VITE_N8N_WEBHOOK_URL);
+      console.log("FLOW 1 WEBHOOK URL:", import.meta.env.VITE_N8N_WEBHOOK_URL);
       console.log("Sending questionnaire payload:", payload);
 
       try {
@@ -235,12 +348,17 @@
           body: JSON.stringify(payload)
         });
 
+        const rawText = await response.text();
+        console.log("RAW N8N TEXT:", rawText);
+
         if (!response.ok) {
-          throw new Error(ERROR_MESSAGE);
+          throw new Error(`Flow 1 webhook returned HTTP ${response.status}: ${rawText}`);
         }
 
-        const data = await response.json();
-        showResult(normalizeN8nResult(data));
+        const rawData = rawText ? JSON.parse(rawText) : {};
+        const data = Array.isArray(rawData) ? rawData[0] : rawData;
+        console.log("CLEAN N8N DATA:", data);
+        showResult(normalizeFlow1Result(data));
       } catch (error) {
         console.error("Persona request failed:", error);
         showError(ERROR_MESSAGE);
@@ -261,11 +379,36 @@
     }
 
     function showEmptyState() {
+      setQuestionnaireCollapsed(false);
+
+      if (layout) {
+        layout.classList.remove("has-persona");
+      }
+
       toggleHidden(emptyState, false);
+      toggleHidden(generatingState, true);
       toggleHidden(resultCard, true);
       toggleHidden(errorCard, true);
       setElementText(errorMessage, "");
       result = null;
+      finalResult = null;
+      clearResult();
+    }
+
+    function showGeneratingState() {
+      setQuestionnaireCollapsed(false);
+
+      if (layout) {
+        layout.classList.remove("has-persona");
+      }
+
+      toggleHidden(emptyState, true);
+      toggleHidden(generatingState, false);
+      toggleHidden(resultCard, true);
+      toggleHidden(errorCard, true);
+      setElementText(errorMessage, "");
+      result = null;
+      finalResult = null;
       clearResult();
     }
 
@@ -276,17 +419,56 @@
       }
 
       toggleHidden(emptyState, true);
+      toggleHidden(generatingState, true);
       toggleHidden(errorCard, true);
       result = generatedResult;
       renderResult(generatedResult);
       toggleHidden(resultCard, false);
+
+      if (layout) {
+        layout.classList.add("has-persona");
+        setQuestionnaireCollapsed(true);
+      }
     }
 
     function showError(message) {
+      setQuestionnaireCollapsed(false);
+
+      if (layout) {
+        layout.classList.remove("has-persona");
+      }
+
       toggleHidden(emptyState, true);
+      toggleHidden(generatingState, true);
       toggleHidden(resultCard, true);
       setElementText(errorMessage, message);
       toggleHidden(errorCard, false);
+    }
+
+    function toggleQuestionnaire() {
+      if (!layout || !layout.classList.contains("has-persona")) {
+        return;
+      }
+
+      setQuestionnaireCollapsed(!layout.classList.contains("questionnaire-collapsed"));
+    }
+
+    function setQuestionnaireCollapsed(isCollapsed) {
+      if (!layout || !questionnaireToggle) {
+        return;
+      }
+
+      layout.classList.toggle("questionnaire-collapsed", isCollapsed);
+      questionnaireToggle.setAttribute("aria-expanded", String(!isCollapsed));
+      questionnaireToggle.setAttribute(
+        "aria-label",
+        isCollapsed ? "Expand questionnaire" : "Collapse questionnaire"
+      );
+      questionnaireToggle.title = isCollapsed ? "Expand questionnaire" : "Collapse questionnaire";
+
+      if (questionnaireToggleIcon) {
+        questionnaireToggleIcon.innerHTML = isCollapsed ? "&#9662;" : "&#9652;";
+      }
     }
 
     function normalizeN8nResult(data) {
@@ -313,6 +495,64 @@
       }
 
       return result;
+    }
+
+    function normalizeFlow1Result(data) {
+      if (!data || typeof data !== "object") {
+        return data;
+      }
+
+      const personaSource =
+        data.persona && typeof data.persona === "object"
+          ? data.persona
+          : data;
+      const scenarioSource =
+        data.scenario && typeof data.scenario === "object"
+          ? data.scenario
+          : data;
+      const choices = Array.isArray(scenarioSource.choices)
+        ? scenarioSource.choices
+        : [
+            createFlow1Choice("A", scenarioSource.choiceA),
+            createFlow1Choice("B", scenarioSource.choiceB),
+            createFlow1Choice("C", scenarioSource.choiceC),
+            createFlow1Choice("D", scenarioSource.choiceD)
+          ].filter(Boolean);
+
+      return {
+        userId: data.userId,
+        persona: {
+          personaName: personaSource.personaName,
+          riskLevel: personaSource.riskLevel,
+          mainWeakness: personaSource.mainWeakness,
+          likelyScamTypes: personaSource.likelyScamTypes,
+          specificScamVariation: personaSource.specificScamVariation,
+          reasoning: personaSource.reasoning
+        },
+        scenario: {
+          scenarioTitle: scenarioSource.scenarioTitle,
+          scenarioText: scenarioSource.scenarioText || scenarioSource.scenarioDescription,
+          choices
+        }
+      };
+    }
+
+    function createFlow1Choice(option, value) {
+      if (value === null || value === undefined || value === "") {
+        return null;
+      }
+
+      if (typeof value === "object") {
+        return {
+          option: value.option || option,
+          text: value.text || value.label || value.choice || ""
+        };
+      }
+
+      return {
+        option,
+        text: String(value).replace(new RegExp(`^${option}[.)]\\s*`, "i"), "")
+      };
     }
 
     function parseJsonResponse(responseText) {
@@ -392,15 +632,98 @@
         });
 
         console.log("Phase 2 response status:", response.status, response.statusText);
-        const responseText = await response.text();
-        console.log("Phase 2 raw response:", responseText);
 
         if (!response.ok) {
+          const responseText = await response.text();
           throw new Error(`Phase 2 webhook returned HTTP ${response.status}: ${responseText}`);
         }
 
-        const data = parseJsonResponse(responseText);
-        renderChoiceOutcome(normalizeN8nResult(data));
+        const data = await response.json();
+        const result = normalizeFlow2Result(data);
+        console.log("Flow 2 response:", result);
+
+        if (!result || typeof result !== "object") {
+          throw new Error("Phase 2 webhook returned an unsupported response.");
+        }
+
+        const outcomeData = result.outcome || result.choiceOutcome?.outcome || {};
+        const nestedFeedback =
+          result.feedback && typeof result.feedback === "object"
+            ? result.feedback
+            : null;
+        const feedbackData =
+          result.feedbackResult ||
+          result.finalResult ||
+          result.choiceOutcome?.feedback ||
+          result.choiceOutcome ||
+          nestedFeedback ||
+          result;
+
+        const redFlags =
+          [
+            result.redFlagsMissed,
+            result.red_flags_missed,
+            outcomeData.redFlagsMissed,
+            outcomeData.red_flags_missed,
+            feedbackData.redFlagsMissed,
+            feedbackData.red_flags_missed
+          ]
+            .map(normalizeList)
+            .find((items) => items.length > 0) || [];
+
+        const tips =
+          [
+            result.safetyTips,
+            result.safety_tips,
+            feedbackData.safetyTips,
+            feedbackData.safety_tips,
+            outcomeData.safetyTips,
+            outcomeData.safety_tips
+          ]
+            .map(normalizeList)
+            .find((items) => items.length > 0) || [];
+
+        setChoiceOutcome({
+          selectedChoice:
+            result.selectedChoice ||
+            outcomeData.selectedChoice ||
+            "Not returned",
+
+          outcomeSummary:
+            result.outcomeSummary ||
+            outcomeData.outcomeSummary ||
+            "Not returned",
+
+          scamRisk:
+            result.scamRisk ??
+            outcomeData.scamRisk ??
+            "Not returned",
+
+          whatHappensNext:
+            result.whatHappensNext ||
+            outcomeData.whatHappensNext ||
+            "Not returned",
+
+          redFlagsMissed: redFlags,
+
+          feedback:
+            result.feedback ||
+            feedbackData.feedback ||
+            "Not returned",
+
+          safetyTips: tips,
+
+          score:
+            result.score ??
+            feedbackData.score ??
+            "Not returned",
+
+          readinessLevel:
+            result.readinessLevel ||
+            feedbackData.readinessLevel ||
+            result.readiness_level ||
+            "Not returned"
+        });
       } catch (error) {
         console.error("Choice request failed:", error);
         showChoiceError(CHOICE_ERROR_MESSAGE);
@@ -417,41 +740,378 @@
       });
     }
 
-    function renderChoiceOutcome(result) {
-      if (!result || typeof result !== "object") {
+    function normalizeFlow2Result(data) {
+      let value = data;
+
+      for (let depth = 0; depth < 5; depth += 1) {
+        if (Array.isArray(value)) {
+          value = value[0];
+          continue;
+        }
+
+        if (typeof value === "string") {
+          try {
+            value = JSON.parse(value);
+            continue;
+          } catch (error) {
+            return value;
+          }
+        }
+
+        if (!value || typeof value !== "object") {
+          return value;
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(value, "selectedChoice") ||
+          Object.prototype.hasOwnProperty.call(value, "outcomeSummary") ||
+          Object.prototype.hasOwnProperty.call(value, "scamRisk")
+        ) {
+          return value;
+        }
+
+        const wrappedValue = value.json ?? value.body ?? value.data ?? value.output;
+
+        if (wrappedValue === undefined) {
+          return value;
+        }
+
+        value = wrappedValue;
+      }
+
+      return value;
+    }
+
+    function setChoiceOutcome(choiceResult) {
+      if (!choiceResult || typeof choiceResult !== "object") {
         showChoiceError(CHOICE_ERROR_MESSAGE);
         return;
       }
 
-      const outcome = result.outcome || {};
-      const feedback = result.feedback || {};
-
       toggleHidden(choiceError, true);
-      setText("[data-selected-choice]", result.selectedChoice);
-      setText("[data-outcome-summary]", outcome.outcomeSummary);
-      setText("[data-scam-risk]", outcome.scamRisk);
-      setText("[data-what-happens-next]", outcome.whatHappensNext);
-      renderList("[data-red-flags-missed]", outcome.redFlagsMissed);
-      setText("[data-choice-feedback]", feedback.feedback);
-      renderList("[data-safety-tips]", feedback.safetyTips);
-      setText("[data-choice-score]", feedback.score);
-      setText("[data-readiness-level]", feedback.readinessLevel);
+      setText("[data-selected-choice]", choiceResult.selectedChoice);
+      setText("[data-outcome-summary]", choiceResult.outcomeSummary);
+      setText("[data-scam-risk]", choiceResult.scamRisk ?? "Not returned");
+      setText("[data-what-happens-next]", choiceResult.whatHappensNext || "Not returned");
+      renderList("[data-red-flags-missed]", choiceResult.redFlagsMissed);
+      setText("[data-choice-feedback]", choiceResult.feedback);
+      renderList("[data-safety-tips]", choiceResult.safetyTips);
+      setText("[data-choice-score]", choiceResult.score);
+      setText("[data-readiness-level]", choiceResult.readinessLevel);
+      finalResult = buildFinalResult(choiceResult);
+      clearEmailMessages();
+      clearTelegramMessages();
       toggleHidden(choiceOutcome, false);
     }
 
     function showChoiceError(message) {
       toggleHidden(choiceOutcome, true);
+      finalResult = null;
+      clearEmailResult();
+      clearTelegramResult();
       setElementText(choiceError, message);
       toggleHidden(choiceError, false);
     }
 
+    async function handleSendEmailResult() {
+      clearEmailMessages();
+
+      const userEmail = String(resultEmailInput ? resultEmailInput.value : "").trim();
+
+      if (!userEmail) {
+        showEmailError(EMAIL_ERROR_MESSAGE);
+        return;
+      }
+
+      if (!finalResult) {
+        showEmailError(EMAIL_ERROR_MESSAGE);
+        return;
+      }
+
+      const emailWebhookUrl = String(import.meta.env.VITE_N8N_EMAIL_WEBHOOK_URL || "").trim();
+
+      if (!emailWebhookUrl || !emailWebhookUrl.includes("/webhook-test/")) {
+        showEmailError(EMAIL_ERROR_MESSAGE);
+        return;
+      }
+
+      try {
+        setEmailLoading(true);
+
+        const response = await fetch(emailWebhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: userEmail,
+            personaName: finalResult.personaName,
+            riskLevel: finalResult.riskLevel,
+            likelyScamTypes: finalResult.likelyScamTypes,
+            scenarioTitle: finalResult.scenarioTitle,
+            scenarioText: finalResult.scenarioText,
+            selectedChoice: finalResult.selectedChoice,
+            outcomeSummary: finalResult.outcomeSummary,
+            feedback: finalResult.feedback,
+            score: finalResult.score
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Email webhook returned HTTP ${response.status}.`);
+        }
+
+        const responseText = await response.text();
+        const data = normalizeN8nResult(parseJsonResponse(responseText));
+
+        if (!data || data.success !== true) {
+          throw new Error("Email webhook did not return success.");
+        }
+
+        showEmailSuccess(EMAIL_SUCCESS_MESSAGE);
+      } catch (error) {
+        console.error("Email result request failed:", error);
+        showEmailError(EMAIL_ERROR_MESSAGE);
+      } finally {
+        setEmailLoading(false);
+      }
+    }
+
+    function buildFinalResult(choiceResult) {
+      const persona = (result && result.persona) || {};
+      const scenario = (result && result.scenario) || {};
+
+      return {
+        personaName: persona.personaName,
+        riskLevel: persona.riskLevel,
+        likelyScamTypes: formatScamTypes(persona.likelyScamTypes),
+        scenarioTitle: scenario.scenarioTitle,
+        scenarioText: scenario.scenarioText,
+        selectedChoice: choiceResult.selectedChoice,
+        outcomeSummary: choiceResult.outcomeSummary,
+        feedback: choiceResult.feedback,
+        score: choiceResult.score
+      };
+    }
+
+    function formatScamTypes(value) {
+      if (Array.isArray(value)) {
+        return value.filter(Boolean).map(String).join(", ");
+      }
+
+      return value;
+    }
+
+    function setEmailLoading(isLoading) {
+      toggleHidden(emailLoading, !isLoading);
+
+      if (sendEmailButton) {
+        sendEmailButton.disabled = isLoading;
+        sendEmailButton.textContent = isLoading ? "Sending..." : "Send Result to Email";
+      }
+    }
+
+    function showEmailSuccess(message) {
+      setElementText(emailSuccess, message);
+      toggleHidden(emailSuccess, false);
+      toggleHidden(emailError, true);
+    }
+
+    function showEmailError(message) {
+      setElementText(emailError, message);
+      toggleHidden(emailError, false);
+      toggleHidden(emailSuccess, true);
+    }
+
+    function clearEmailResult() {
+      if (resultEmailInput) {
+        resultEmailInput.value = "";
+      }
+
+      clearEmailMessages();
+      setEmailLoading(false);
+    }
+
+    function clearEmailMessages() {
+      setElementText(emailSuccess, "");
+      setElementText(emailError, "");
+      toggleHidden(emailSuccess, true);
+      toggleHidden(emailError, true);
+    }
+
+    function handleConnectTelegram() {
+      clearTelegramMessages();
+
+      const botUsername = String(import.meta.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "")
+        .trim()
+        .replace(/^@/, "");
+
+      if (!botUsername || !sessionId) {
+        showTelegramError(TELEGRAM_ERROR_MESSAGE);
+        return;
+      }
+
+      window.open(`https://t.me/${botUsername}?start=${encodeURIComponent(sessionId)}`, "_blank", "noopener,noreferrer");
+    }
+
+    async function handleSendTelegramResult() {
+      clearTelegramMessages();
+
+      if (!finalResult) {
+        showTelegramError(TELEGRAM_ERROR_MESSAGE);
+        return;
+      }
+
+      const telegramWebhookUrl = String(import.meta.env.NEXT_PUBLIC_N8N_TELEGRAM_WEBHOOK_URL || "").trim();
+
+      if (!telegramWebhookUrl || !telegramWebhookUrl.includes("/webhook-test/")) {
+        showTelegramError(TELEGRAM_ERROR_MESSAGE);
+        return;
+      }
+
+      try {
+        setTelegramLoading(true);
+
+        const response = await fetch(telegramWebhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId,
+            personaName: finalResult.personaName,
+            riskLevel: finalResult.riskLevel,
+            likelyScamTypes: finalResult.likelyScamTypes,
+            scenarioTitle: finalResult.scenarioTitle,
+            scenarioText: finalResult.scenarioText,
+            selectedChoice: finalResult.selectedChoice,
+            outcomeSummary: finalResult.outcomeSummary,
+            feedback: finalResult.feedback,
+            score: finalResult.score
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Telegram webhook returned HTTP ${response.status}.`);
+        }
+
+        const responseText = await response.text();
+        const data = normalizeN8nResult(parseJsonResponse(responseText));
+
+        if (!data || data.success !== true) {
+          throw new Error("Telegram webhook did not return success.");
+        }
+
+        showTelegramSuccess(TELEGRAM_SUCCESS_MESSAGE);
+      } catch (error) {
+        console.error("Telegram result request failed:", error);
+        showTelegramError(TELEGRAM_ERROR_MESSAGE);
+      } finally {
+        setTelegramLoading(false);
+      }
+    }
+
+    function setTelegramLoading(isLoading) {
+      toggleHidden(telegramLoading, !isLoading);
+
+      if (sendTelegramButton) {
+        sendTelegramButton.disabled = isLoading;
+        sendTelegramButton.textContent = isLoading ? "Sending..." : "Send Result to Telegram";
+      }
+    }
+
+    function showTelegramSuccess(message) {
+      setElementText(telegramSuccess, message);
+      toggleHidden(telegramSuccess, false);
+      toggleHidden(telegramError, true);
+    }
+
+    function showTelegramError(message) {
+      setElementText(telegramError, message);
+      toggleHidden(telegramError, false);
+      toggleHidden(telegramSuccess, true);
+    }
+
+    function clearTelegramResult() {
+      clearTelegramMessages();
+      setTelegramLoading(false);
+    }
+
+    function clearTelegramMessages() {
+      setElementText(telegramSuccess, "");
+      setElementText(telegramError, "");
+      toggleHidden(telegramSuccess, true);
+      toggleHidden(telegramError, true);
+    }
+
+    function getOrCreateTelegramSessionId() {
+      const storedSessionId = getStoredTelegramSessionId(window.localStorage);
+
+      if (storedSessionId) {
+        return storedSessionId;
+      }
+
+      const generatedSessionId = createTelegramSessionId();
+
+      if (!generatedSessionId) {
+        return "";
+      }
+
+      if (storeTelegramSessionId(window.localStorage, generatedSessionId)) {
+        return generatedSessionId;
+      }
+
+      storeTelegramSessionId(window.sessionStorage, generatedSessionId);
+      return generatedSessionId;
+    }
+
+    function createTelegramSessionId() {
+      if (!window.crypto || typeof window.crypto.randomUUID !== "function") {
+        return "";
+      }
+
+      return window.crypto.randomUUID();
+    }
+
+    function getStoredTelegramSessionId(storage) {
+      try {
+        return storage ? storage.getItem(TELEGRAM_SESSION_STORAGE_KEY) : "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function storeTelegramSessionId(storage, value) {
+      try {
+        if (!storage) {
+          return false;
+        }
+
+        storage.setItem(TELEGRAM_SESSION_STORAGE_KEY, value);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
     function clearResult() {
-      document.querySelectorAll("[data-digital-twin-result] dd, [data-scenario-title], [data-scenario-text]").forEach((element) => {
-        element.textContent = "";
-      });
+      document
+        .querySelectorAll(
+          [
+            "[data-persona-name]",
+            "[data-risk-level]",
+            "[data-main-weakness]",
+            "[data-likely-scam-types]",
+            "[data-specific-scam-variation]",
+            "[data-reasoning]",
+            "[data-scenario-title]",
+            "[data-scenario-text]"
+          ].join(", ")
+        )
+        .forEach((element) => {
+          element.textContent = "";
+        });
 
       replaceChildrenSafe(getElement("[data-choice-list]"));
       clearChoiceOutcome();
+      clearEmailResult();
+      clearTelegramResult();
       toggleHidden(choiceError, true);
       setElementText(choiceError, "");
     }
@@ -476,6 +1136,9 @@
       ].forEach((selector) => {
         setElementText(getElement(selector), "");
       });
+      finalResult = null;
+      clearEmailMessages();
+      clearTelegramMessages();
       replaceChildrenSafe(getElement("[data-red-flags-missed]"));
       replaceChildrenSafe(getElement("[data-safety-tips]"));
       toggleHidden(choiceError, true);
