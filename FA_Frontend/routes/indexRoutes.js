@@ -6,7 +6,6 @@ const homeController = require("../controllers/homeController");
 const checkerController = require("../controllers/checkerController");
 const chatbotController = require("../controllers/chatbotController");
 const quizController = require("../controllers/quizController");
-const aboutController = require("../controllers/aboutController");
 const reportController = require("../controllers/reportController");
 const feedbackController = require("../controllers/feedbackController");
 const scamTrendsController = require("../controllers/scamTrendsController");
@@ -69,6 +68,5 @@ router.get("/admin/scam-trends", scamTrendsController.showDashboard);
 router.get("/feedback", feedbackController.showFeedback);
 router.post("/feedback", feedbackController.submitFeedback);
 router.get("/feedback-dashboard", feedbackController.getFeedbackDashboard);
-router.get("/about", aboutController.showAbout);
 
 module.exports = router;

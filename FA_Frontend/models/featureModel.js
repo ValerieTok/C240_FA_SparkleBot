@@ -50,6 +50,16 @@ const featureGroups = [
         href: "/digital-twin"
       }
     ]
+  },
+  {
+    title: "Scam Quiz",
+    description: "Test your scam-spotting skills with a personalised quiz, then review your score, strengths, and areas for improvement.",
+    links: [
+      {
+        label: "Take the Scam Quiz",
+        href: "/scam-quiz"
+      }
+    ]
   }
 ];
 

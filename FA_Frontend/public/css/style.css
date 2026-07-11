@@ -264,7 +264,7 @@ h1 {
 }
 
 .home-feature-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -292,6 +292,48 @@ h1 {
 
 .home-dashboard-section {
   padding-top: 56px;
+}
+
+.promotional-artefacts-section {
+  padding-top: 28px;
+}
+
+.promotional-artefacts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.promotional-artefact-card {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.72fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+}
+
+.poster-preview-link {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--grey-100);
+  box-shadow: 0 10px 24px rgba(15, 47, 95, 0.16);
+}
+
+.promotional-poster {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+.promotional-artefact-content p {
+  margin-bottom: 20px;
+}
+
+.promotional-artefact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .card,
@@ -1653,6 +1695,10 @@ iframe[name*="botpress"],
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .promotional-artefacts-grid {
+    grid-template-columns: 1fr;
+  }
+
   .dashboard-header {
     flex-direction: column;
   }
@@ -1694,6 +1740,19 @@ iframe[name*="botpress"],
 
   .home-feature-grid {
     grid-template-columns: 1fr;
+  }
+
+  .promotional-artefact-card {
+    grid-template-columns: 1fr;
+  }
+
+  .poster-preview-link {
+    width: min(100%, 360px);
+    margin: 0 auto;
+  }
+
+  .promotional-artefact-actions .btn {
+    flex: 1 1 150px;
   }
 
   .navbar {

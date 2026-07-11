@@ -40,11 +40,6 @@ const pages = {
     heading: "Feedback Dashboard",
     description:
       "Track satisfaction trends and live user comments processed by n8n."
-  },
-  about: {
-    heading: "About AI",
-    description:
-      "SparkleBot combines practical web tools with modern AI concepts for scam education and safer decision-making."
   }
 };
 
