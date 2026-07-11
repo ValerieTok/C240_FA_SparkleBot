@@ -1392,11 +1392,23 @@ h1 {
   border: 1px solid var(--grey-200);
   border-radius: 8px;
   background: var(--white);
+  overflow: hidden;
 }
 
 .inline-preview h2 {
   margin-bottom: 10px;
   font-size: 1rem;
+}
+
+.inline-preview #screenshotPreview {
+  display: block;
+  width: min(100%, 260px);
+  height: 260px;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 6px;
+  background: var(--grey-100);
 }
 
 .result-card:last-child,
