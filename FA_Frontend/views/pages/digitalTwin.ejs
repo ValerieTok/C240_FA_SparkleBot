@@ -830,10 +830,13 @@
 
       const emailWebhookUrl = String(import.meta.env.VITE_N8N_EMAIL_WEBHOOK_URL || "").trim();
 
-      if (!emailWebhookUrl || !emailWebhookUrl.includes("/webhook-test/")) {
+      if (!emailWebhookUrl || !emailWebhookUrl.includes("/webhook/")) {
         showEmailError(EMAIL_ERROR_MESSAGE);
         return;
       }
+
+      let responseStatus = null;
+      let responseBody = "";
 
       try {
         setEmailLoading(true);
@@ -855,12 +858,14 @@
           })
         });
 
+        responseStatus = response.status;
+        responseBody = await response.text();
+
         if (!response.ok) {
           throw new Error(`Email webhook returned HTTP ${response.status}.`);
         }
 
-        const responseText = await response.text();
-        const data = normalizeN8nResult(parseJsonResponse(responseText));
+        const data = normalizeN8nResult(parseJsonResponse(responseBody));
 
         if (!data || data.success !== true) {
           throw new Error("Email webhook did not return success.");
@@ -868,7 +873,12 @@
 
         showEmailSuccess(EMAIL_SUCCESS_MESSAGE);
       } catch (error) {
-        console.error("Email result request failed:", error);
+        console.error("Email result request failed", {
+          endpoint: emailWebhookUrl,
+          httpStatus: responseStatus,
+          responseBody,
+          fetchOrCorsError: error
+        });
         showEmailError(EMAIL_ERROR_MESSAGE);
       } finally {
         setEmailLoading(false);
@@ -962,10 +972,13 @@
 
       const telegramWebhookUrl = String(import.meta.env.NEXT_PUBLIC_N8N_TELEGRAM_WEBHOOK_URL || "").trim();
 
-      if (!telegramWebhookUrl || !telegramWebhookUrl.includes("/webhook-test/")) {
+      if (!telegramWebhookUrl || !telegramWebhookUrl.includes("/webhook/")) {
         showTelegramError(TELEGRAM_ERROR_MESSAGE);
         return;
       }
+
+      let responseStatus = null;
+      let responseBody = "";
 
       try {
         setTelegramLoading(true);
@@ -987,12 +1000,14 @@
           })
         });
 
+        responseStatus = response.status;
+        responseBody = await response.text();
+
         if (!response.ok) {
           throw new Error(`Telegram webhook returned HTTP ${response.status}.`);
         }
 
-        const responseText = await response.text();
-        const data = normalizeN8nResult(parseJsonResponse(responseText));
+        const data = normalizeN8nResult(parseJsonResponse(responseBody));
 
         if (!data || data.success !== true) {
           throw new Error("Telegram webhook did not return success.");
@@ -1000,7 +1015,12 @@
 
         showTelegramSuccess(TELEGRAM_SUCCESS_MESSAGE);
       } catch (error) {
-        console.error("Telegram result request failed:", error);
+        console.error("Telegram result request failed", {
+          endpoint: telegramWebhookUrl,
+          httpStatus: responseStatus,
+          responseBody,
+          fetchOrCorsError: error
+        });
         showTelegramError(TELEGRAM_ERROR_MESSAGE);
       } finally {
         setTelegramLoading(false);
