@@ -191,6 +191,36 @@ function sendRecommendedLearningContext(context) {
   );
 }
 
+async function requestScamQuiz(payload) {
+  const trimmedUrl = String(process.env.N8N_SCAM_QUIZ_WEBHOOK_URL || "").trim();
+
+  if (!trimmedUrl) {
+    throw new Error("N8N_SCAM_QUIZ_WEBHOOK_URL missing.");
+  }
+
+  console.log("Scam quiz payload sent to n8n:", JSON.stringify(payload));
+
+  const response = await fetch(trimmedUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const responseText = await response.text();
+
+  console.log("Raw scam quiz n8n response:", responseText);
+
+  if (!response.ok) {
+    if (responseText) {
+      console.error("n8n scam quiz error response:", responseText);
+    }
+
+    throw new Error(getWebhookErrorMessage(response.status, trimmedUrl));
+  }
+
+  return normalizeQuizResponse(parseQuizResponse(responseText));
+}
+
 function parseAnalysisResponse(responseText) {
   const trimmedText = String(responseText || "").trim();
 
@@ -331,6 +361,239 @@ function parseJsonMaybe(value) {
 
     return parseTextAnalysis(value);
   }
+}
+
+function parseQuizResponse(responseText) {
+  const trimmedText = String(responseText || "").trim();
+
+  if (!trimmedText) {
+    throw new Error("n8n scam quiz returned an empty response.");
+  }
+
+  const parsed = parseJsonMaybe(trimmedText);
+  const result = Array.isArray(parsed) ? parsed[0] : parsed;
+
+  if (typeof result === "string") {
+    return parseJsonMaybe(stripCodeFence(result));
+  }
+
+  if (!result || typeof result !== "object") {
+    throw new Error("n8n scam quiz returned an unsupported response.");
+  }
+
+  const nestedQuiz = findQuizPayload(result);
+
+  return nestedQuiz || result;
+}
+
+function findQuizPayload(value) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  if (hasQuizFields(value)) {
+    return value;
+  }
+
+  const candidates = [
+    value.quiz,
+    value.data,
+    value.result,
+    value.output,
+    value.response,
+    value.body,
+    value.message,
+    value.message?.content,
+    value.choices?.[0]?.message?.content
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "string") {
+      const parsed = parseJsonMaybe(stripCodeFence(candidate));
+
+      if (parsed && typeof parsed === "object") {
+        const nested = findQuizPayload(parsed);
+
+        if (nested) {
+          return nested;
+        }
+      }
+    }
+
+    if (candidate && typeof candidate === "object") {
+      const nested = findQuizPayload(candidate);
+
+      if (nested) {
+        return nested;
+      }
+    }
+  }
+
+  return null;
+}
+
+function hasQuizFields(value) {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      (value.questions ||
+        value.score !== undefined ||
+        value.total !== undefined ||
+        value.percentage !== undefined ||
+        value.weakCategories ||
+        value.strongCategories ||
+        value.aiLatestSummary ||
+        value.ai_latest_summary ||
+        value.summary ||
+        value.latest_summary ||
+        value.latestSummary ||
+        value.mode ||
+        value.session_id ||
+        value.sessionId)
+  );
+}
+
+function normalizeQuizResponse(result) {
+  const normalizedQuestions = Array.isArray(result.questions)
+    ? result.questions.map(normalizeQuizQuestion).filter(Boolean)
+    : [];
+
+  return {
+    quizId: String(result.quizId || result.quiz_id || result.id || result.sessionId || result.session_id || "").trim(),
+    sessionId: String(result.sessionId || result.session_id || result.quizId || result.quiz_id || result.id || "").trim(),
+    mode: normalizeQuizMode(result.mode || result.quizMode || result.quiz_mode),
+    questions: normalizedQuestions,
+    score: normalizeQuizMetric(result.score ?? result.quizScore ?? result.correctAnswers ?? result.correct_answers),
+    total: normalizeQuizMetric(result.total ?? result.totalQuestions ?? result.total_questions ?? normalizedQuestions.length),
+    percentage: normalizeQuizMetric(
+      result.percentage ?? result.percent ?? result.scorePercentage ?? result.score_percentage
+    ),
+    weakCategories: normalizeQuizStringList(
+      result.weakCategories ?? result.weak_categories ?? result.weakAreas ?? result.weak_areas
+    ),
+    strongCategories: normalizeQuizStringList(
+      result.strongCategories ?? result.strong_categories ?? result.strongAreas ?? result.strong_areas
+    ),
+    aiLatestSummary: String(
+      result.aiLatestSummary ??
+        result.ai_latest_summary ??
+        result.latestSummary ??
+        result.latest_summary ??
+        result.summary ??
+        result.message ??
+        result.latestSummaryText ??
+        result.latest_summary_text ??
+        ""
+    ).trim(),
+    raw: result
+  };
+}
+
+function normalizeQuizMode(value) {
+  const mode = String(value || "").trim().toLowerCase();
+
+  if (mode === "targeted_ai" || mode === "targeted-ai" || mode === "personalised_ai") {
+    return "targeted_ai";
+  }
+
+  return "general";
+}
+
+function normalizeQuizQuestion(item, index) {
+  if (!item) {
+    return null;
+  }
+
+  if (typeof item === "string") {
+    return {
+      question_id: String(index + 1),
+      question: item.trim(),
+      options: ["A", "B", "C", "D"].map((letter) => ({
+        key: letter,
+        label: `Option ${letter}`
+      }))
+    };
+  }
+
+  const questionId = String(item.question_id || item.questionId || item.id || index + 1).trim();
+  const question = String(
+    item.question || item.prompt || item.text || item.question_text || item.questionText || ""
+  ).trim();
+
+  return {
+    question_id: questionId,
+    question: question || `Question ${index + 1}`,
+    options: normalizeQuizOptions(item.options || item.answer_options || item.answers || item.choices || item, index)
+  };
+}
+
+function normalizeQuizOptions(rawOptions, fallbackItem) {
+  const optionKeys = ["A", "B", "C", "D"];
+
+  return optionKeys.map((letter, index) => {
+    const value = resolveQuizOptionValue(rawOptions, fallbackItem, letter, index);
+
+    return {
+      key: letter,
+      label: String(value || `Option ${letter}`).trim()
+    };
+  });
+}
+
+function resolveQuizOptionValue(rawOptions, fallbackItem, letter, index) {
+  if (Array.isArray(rawOptions)) {
+    return rawOptions[index];
+  }
+
+  if (rawOptions && typeof rawOptions === "object") {
+    return (
+      rawOptions[letter] ??
+      rawOptions[letter.toLowerCase()] ??
+      rawOptions[`option_${letter.toLowerCase()}`] ??
+      rawOptions[`option${letter}`] ??
+      rawOptions[index + 1]
+    );
+  }
+
+  if (fallbackItem && typeof fallbackItem === "object") {
+    return (
+      fallbackItem[letter] ??
+      fallbackItem[letter.toLowerCase()] ??
+      fallbackItem[`option_${letter.toLowerCase()}`] ??
+      fallbackItem[`option${letter}`]
+    );
+  }
+
+  return "";
+}
+
+function normalizeQuizMetric(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const number = Number(value);
+
+  if (Number.isFinite(number)) {
+    return number;
+  }
+
+  return String(value).trim();
+}
+
+function normalizeQuizStringList(value) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => String(entry).trim()).filter(Boolean);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.values(value).map((entry) => String(entry).trim()).filter(Boolean);
+  }
+
+  return String(value || "")
+    .split(/\r?\n|,\s*/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 function stripCodeFence(value) {
@@ -876,6 +1139,24 @@ function getFriendlyReportError(error) {
   return "n8n scam report workflow is unavailable right now. Please check the workflow and try again.";
 }
 
+function getFriendlyQuizError(error) {
+  const message = error.message || "";
+
+  if (message.includes("N8N_SCAM_QUIZ_WEBHOOK_URL")) {
+    return "n8n scam quiz webhook is missing. Add N8N_SCAM_QUIZ_WEBHOOK_URL to your .env file.";
+  }
+
+  if (message.includes("webhook-test") || message.includes("HTTP 404")) {
+    return "n8n scam quiz webhook is not listening. Use the production webhook URL with an active workflow, or click 'Listen for test event' in n8n.";
+  }
+
+  if (message.includes("empty response") || message.includes("unsupported response")) {
+    return "n8n did not return a usable quiz response. Configure the workflow to return questions for start_quiz and score details for submit_quiz.";
+  }
+
+  return "n8n scam quiz is unavailable right now. Please check the workflow and try again.";
+}
+
 function isHighRiskAnalysis(analysis) {
   const riskLevel = getAnalysisValue(analysis, "riskLevel").toLowerCase();
 
@@ -923,6 +1204,8 @@ module.exports = {
   requestScamAnalysis,
   getFriendlyN8nError,
   getFriendlyReportError,
+  requestScamQuiz,
+  getFriendlyQuizError,
   sendHighRiskAlert,
   submitScamReport,
   sendFeedback,

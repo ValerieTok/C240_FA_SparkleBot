@@ -1,0 +1,482 @@
+<section class="quiz-shell">
+  <p class="quiz-brand">SparkleBot Scam Education</p>
+
+  <p class="form-status error hidden" data-quiz-status role="status" aria-live="polite"></p>
+
+  <section class="quiz-stage" data-quiz-stage="start">
+    <article class="quiz-card quiz-start-card">
+      <p class="quiz-eyebrow">Personalised Quiz</p>
+      <h1>Personalised Scam Awareness Quiz</h1>
+      <p class="quiz-lead">
+        Test your ability to spot common scam tactics in Singapore. This quiz checks how well you recognise phishing, impersonation, investment scams, fake job offers, and other scam warning signs. If you enter your email, SparkleBot can remember your weak areas and give you more targeted questions next time.
+      </p>
+
+      <form class="quiz-start-form" data-quiz-start-form>
+        <label for="quizEmailInput">Email <span>(optional)</span></label>
+        <input
+          id="quizEmailInput"
+          name="email"
+          type="email"
+          placeholder="name@example.com"
+          value="<%= quizState.email || '' %>"
+        >
+
+        <p class="form-note quiz-helper">
+          Enter your email if you want SparkleBot to save your progress and personalise future quizzes. Leave it blank to practise as a guest.
+        </p>
+
+        <div class="analysis-loading hidden" data-quiz-loading-start role="status" aria-live="polite">
+          <span class="loading-spinner" aria-hidden="true"></span>
+          <span>Starting quiz...</span>
+        </div>
+
+        <button class="btn btn-primary quiz-primary-action" type="submit">Start Quiz</button>
+      </form>
+    </article>
+  </section>
+
+  <section class="quiz-stage hidden" data-quiz-stage="quiz">
+    <article class="quiz-card quiz-questions-card">
+      <p class="quiz-mode-badge hidden" data-quiz-mode-label></p>
+      <div class="quiz-stage-header">
+        <p class="quiz-step">Step 2 of 3</p>
+        <h2>Answer the questions</h2>
+      </div>
+
+      <p class="form-note">Choose one option for each question. Questions appear in a single vertical list.</p>
+
+      <form class="quiz-answers-form" data-quiz-answers-form>
+        <div class="analysis-loading hidden" data-quiz-loading-quiz role="status" aria-live="polite">
+          <span class="loading-spinner" aria-hidden="true"></span>
+          <span>Loading quiz...</span>
+        </div>
+
+        <div class="quiz-question-list" data-quiz-questions></div>
+
+        <div class="quiz-actions quiz-actions-row">
+          <button class="btn btn-secondary" type="button" data-quiz-back>Back to Start</button>
+          <button class="btn btn-primary" type="submit" data-quiz-submit>Submit Answers</button>
+        </div>
+      </form>
+    </article>
+  </section>
+
+  <section class="quiz-stage hidden" data-quiz-stage="result">
+    <article class="quiz-card quiz-result-card">
+      <p class="quiz-mode-badge hidden" data-quiz-result-mode-label></p>
+      <div class="quiz-stage-header">
+        <p class="quiz-step">Step 3 of 3</p>
+        <h2>Your result</h2>
+      </div>
+
+      <dl class="result-list quiz-result-list">
+        <div>
+          <dt>Score</dt>
+          <dd data-quiz-score>Not returned</dd>
+        </div>
+        <div>
+          <dt>Total</dt>
+          <dd data-quiz-total>Not returned</dd>
+        </div>
+        <div>
+          <dt>Percentage</dt>
+          <dd data-quiz-percentage>Not returned</dd>
+        </div>
+      </dl>
+
+      <section class="quiz-summary">
+        <div class="quiz-summary-block">
+          <h3>Weak Categories</h3>
+          <ul class="quiz-pill-list" data-quiz-weak-categories>
+            <li>None returned</li>
+          </ul>
+        </div>
+
+        <div class="quiz-summary-block">
+          <h3>Strong Categories</h3>
+          <ul class="quiz-pill-list" data-quiz-strong-categories>
+            <li>None returned</li>
+          </ul>
+        </div>
+
+        <div class="quiz-summary-block">
+          <h3>AI Latest Summary</h3>
+          <div class="quiz-summary-content" data-quiz-summary></div>
+        </div>
+      </section>
+
+      <div class="quiz-actions quiz-actions-row">
+        <button class="btn btn-secondary" type="button" data-quiz-retake>Retake Quiz</button>
+        <button class="btn btn-primary" type="button" data-quiz-retake-same>Retake With Same Email</button>
+      </div>
+    </article>
+  </section>
+</section>
+
+<script>
+  (() => {
+    const startForm = document.querySelector("[data-quiz-start-form]");
+    const answersForm = document.querySelector("[data-quiz-answers-form]");
+    const stages = {
+      start: document.querySelector("[data-quiz-stage='start']"),
+      quiz: document.querySelector("[data-quiz-stage='quiz']"),
+      result: document.querySelector("[data-quiz-stage='result']")
+    };
+    const statusElement = document.querySelector("[data-quiz-status]");
+    const startLoading = document.querySelector("[data-quiz-loading-start]");
+    const quizLoading = document.querySelector("[data-quiz-loading-quiz]");
+    const modeLabelElement = document.querySelector("[data-quiz-mode-label]");
+    const resultModeLabelElement = document.querySelector("[data-quiz-result-mode-label]");
+    const emailInput = document.getElementById("quizEmailInput");
+    const questionsContainer = document.querySelector("[data-quiz-questions]");
+    const submitButton = document.querySelector("[data-quiz-submit]");
+    const backButton = document.querySelector("[data-quiz-back]");
+    const retakeButton = document.querySelector("[data-quiz-retake]");
+    const retakeSameButton = document.querySelector("[data-quiz-retake-same]");
+    const scoreElement = document.querySelector("[data-quiz-score]");
+    const totalElement = document.querySelector("[data-quiz-total]");
+    const percentageElement = document.querySelector("[data-quiz-percentage]");
+    const weakCategoriesElement = document.querySelector("[data-quiz-weak-categories]");
+    const strongCategoriesElement = document.querySelector("[data-quiz-strong-categories]");
+    const summaryElement = document.querySelector("[data-quiz-summary]");
+
+    const state = {
+      email: "",
+      mode: "general",
+      sessionId: "",
+      questions: []
+    };
+    let currentSessionId = "";
+
+    function getModeLabel(mode) {
+      return mode === "targeted_ai" ? "Personalised AI Quiz" : "General Practice Quiz";
+    }
+
+    function updateModeLabels() {
+      const label = getModeLabel(state.mode);
+      [modeLabelElement, resultModeLabelElement].forEach((element) => {
+        if (!element) {
+          return;
+        }
+
+        element.textContent = label;
+        element.classList.remove("hidden");
+      });
+    }
+
+    function setStage(stageName) {
+      Object.entries(stages).forEach(([name, element]) => {
+        if (element) {
+          element.classList.toggle("hidden", name !== stageName);
+        }
+      });
+    }
+
+    function setStatus(message, type = "") {
+      if (!statusElement) {
+        return;
+      }
+
+      const text = String(message || "").trim();
+      statusElement.textContent = text;
+      statusElement.className = `form-status ${type}`.trim();
+      statusElement.classList.toggle("hidden", !text);
+    }
+
+    function setLoading(isLoading, context) {
+      [startLoading, quizLoading].forEach((element) => {
+        if (!element) {
+          return;
+        }
+
+        element.classList.toggle("hidden", !isLoading);
+
+        if (context) {
+          const textNode = element.querySelector("span:last-child");
+          if (textNode) {
+            textNode.textContent = context;
+          }
+        }
+      });
+
+      [submitButton, backButton, retakeButton, retakeSameButton].forEach((button) => {
+        if (button) {
+          button.disabled = isLoading;
+        }
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function renderPillList(element, values, emptyLabel) {
+      if (!element) {
+        return;
+      }
+
+      const list = Array.isArray(values) ? values.filter(Boolean) : [];
+      element.innerHTML = list.length
+        ? list.map((value) => `<li>${escapeHtml(value)}</li>`).join("")
+        : `<li>${escapeHtml(emptyLabel)}</li>`;
+    }
+
+    function renderSummary(text) {
+      if (!summaryElement) {
+        return;
+      }
+
+      summaryElement.innerHTML = "";
+
+      const raw = String(text || "").trim();
+
+      if (!raw) {
+        summaryElement.innerHTML = "<p>Not returned</p>";
+        return;
+      }
+
+      raw.split(/\r?\n/).forEach((line) => {
+        const trimmed = line.trim();
+
+        if (!trimmed) {
+          return;
+        }
+
+        if (/^(#{1,3})\s+/.test(trimmed)) {
+          const heading = document.createElement("h4");
+          heading.textContent = trimmed.replace(/^(#{1,3})\s+/, "");
+          summaryElement.appendChild(heading);
+          return;
+        }
+
+        if (/^[-*]\s+/.test(trimmed)) {
+          let list = summaryElement.querySelector("ul");
+
+          if (!list) {
+            list = document.createElement("ul");
+            summaryElement.appendChild(list);
+          }
+
+          const item = document.createElement("li");
+          item.textContent = trimmed.replace(/^[-*]\s+/, "");
+          list.appendChild(item);
+          return;
+        }
+
+        const paragraph = document.createElement("p");
+        paragraph.textContent = trimmed;
+        summaryElement.appendChild(paragraph);
+      });
+    }
+
+    function renderQuestion(question, index) {
+      const questionName = `quiz-question-${index}`;
+      const questionId = String(question.question_id || index + 1);
+      const questionText = String(question.question || `Question ${index + 1}`);
+
+      const options = (question.options || []).map((option) => {
+        const optionKey = String(option.key || "");
+        const optionLabel = String(option.label || "");
+
+        return `
+          <label class="quiz-option" for="${questionName}-${escapeHtml(optionKey)}">
+            <input id="${questionName}-${escapeHtml(optionKey)}" name="${questionName}" type="radio" value="${escapeHtml(optionKey)}" required>
+            <span><strong>${escapeHtml(optionKey)}.</strong> ${escapeHtml(optionLabel)}</span>
+          </label>
+        `;
+      }).join("");
+
+      return `
+        <fieldset class="choice-group quiz-question" data-question-id="${escapeHtml(questionId)}">
+          <legend>${escapeHtml(questionText)}</legend>
+          <div class="quiz-option-list">${options}</div>
+        </fieldset>
+      `;
+    }
+
+    function renderQuestions(questions) {
+      state.questions = Array.isArray(questions) ? questions : [];
+      questionsContainer.innerHTML = state.questions.map(renderQuestion).join("");
+
+      if (submitButton) {
+        submitButton.disabled = state.questions.length === 0;
+      }
+    }
+
+    function getEmailValue() {
+      return String(emailInput?.value || "").trim();
+    }
+
+    function getAnswers() {
+      return state.questions
+        .map((question, index) => {
+          const selected = answersForm.querySelector(`input[name="quiz-question-${index}"]:checked`);
+
+          return {
+            question_id: String(question.question_id || index + 1),
+            selected_option: String(selected?.value || "").trim().toUpperCase()
+          };
+        })
+        .filter((answer) => answer.selected_option);
+    }
+
+    function resetToStart(keepEmail = false) {
+      if (!keepEmail && emailInput) {
+        emailInput.value = "";
+      }
+
+      state.email = keepEmail ? state.email : "";
+      state.mode = "general";
+      state.sessionId = "";
+      currentSessionId = "";
+      state.questions = [];
+      questionsContainer.innerHTML = "";
+      setStatus("");
+      setLoading(false, "");
+      setStage("start");
+      [modeLabelElement, resultModeLabelElement].forEach((element) => {
+        if (element) {
+          element.classList.add("hidden");
+          element.textContent = "";
+        }
+      });
+    }
+
+    async function startQuiz(event) {
+      event.preventDefault();
+
+      const email = getEmailValue();
+      state.email = email;
+      setStatus("");
+      setLoading(true, "Starting quiz...");
+
+      try {
+        const response = await fetch("/scam-quiz/start", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: "start_quiz",
+            email
+          })
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.message || "Unable to start the quiz.");
+        }
+
+        state.email = String(payload.email || email || "").trim();
+        state.mode = String(payload.quiz?.mode || payload.mode || "general").trim() || "general";
+        const returnedSessionId = String(
+          payload.session_id ||
+          payload.sessionId ||
+          payload.quiz?.session_id ||
+          payload.quiz?.sessionId ||
+          ""
+        ).trim();
+
+        currentSessionId = returnedSessionId;
+        state.sessionId = currentSessionId;
+        renderQuestions(payload.quiz?.questions || []);
+        updateModeLabels();
+        setStage("quiz");
+        setStatus("Quiz loaded. Answer each question, then submit your responses.", "success");
+      } catch (error) {
+        setStage("start");
+        setStatus(error.message || "Unable to start the quiz.", "error");
+      } finally {
+        setLoading(false, "");
+      }
+    }
+
+    async function submitQuiz(event) {
+      event.preventDefault();
+
+      const answers = getAnswers();
+
+      console.log("Submitting quiz session_id:", currentSessionId || "(empty)");
+
+      if (!state.questions.length) {
+        setStatus("Start the quiz before submitting answers.", "error");
+        return;
+      }
+
+      if (answers.length !== state.questions.length) {
+        setStatus("Please answer every question before submitting.", "error");
+        return;
+      }
+
+      setStatus("");
+      setLoading(true, "Submitting answers...");
+
+      try {
+        const response = await fetch("/scam-quiz/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: "submit_quiz",
+            email: state.email || getEmailValue(),
+            session_id: currentSessionId || state.sessionId || "",
+            sessionId: currentSessionId || state.sessionId || "",
+            mode: state.mode || "general",
+            answers
+          })
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.message || "Unable to submit the quiz.");
+        }
+
+        scoreElement.textContent = payload.result?.score ?? "Not returned";
+        totalElement.textContent = payload.result?.total ?? "Not returned";
+        percentageElement.textContent = payload.result?.percentage ?? "Not returned";
+        renderPillList(weakCategoriesElement, payload.result?.weakCategories, "None returned");
+        renderPillList(strongCategoriesElement, payload.result?.strongCategories, "None returned");
+        renderSummary(payload.result?.aiLatestSummary);
+        setStage("result");
+        setStatus("Quiz submitted successfully.", "success");
+      } catch (error) {
+        setStatus(error.message || "Unable to submit the quiz.", "error");
+      } finally {
+        setLoading(false, "");
+      }
+    }
+
+    if (startForm) {
+      startForm.addEventListener("submit", startQuiz);
+    }
+
+    if (answersForm) {
+      answersForm.addEventListener("submit", submitQuiz);
+    }
+
+    if (backButton) {
+      backButton.addEventListener("click", () => resetToStart(true));
+    }
+
+    if (retakeButton) {
+      retakeButton.addEventListener("click", () => resetToStart(false));
+    }
+
+    if (retakeSameButton) {
+      retakeSameButton.addEventListener("click", () => {
+        resetToStart(true);
+        startQuiz(new Event("submit"));
+      });
+    }
+
+    setStage("start");
+  })();
+</script>

@@ -16,6 +16,11 @@ const pages = {
     description:
       "Ask SparkleBot about suspicious messages, scam warning signs, and safer next steps."
   },
+  quiz: {
+    heading: "Scam Education Quiz",
+    description:
+      "Test your scam-spotting skills with an AI-generated multiple-choice quiz, then review your score, weak spots, and strong areas."
+  },
   report: {
     heading: "Report Scam",
     description:

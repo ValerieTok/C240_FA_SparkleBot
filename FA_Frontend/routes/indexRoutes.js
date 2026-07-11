@@ -5,6 +5,7 @@ const path = require("path");
 const homeController = require("../controllers/homeController");
 const checkerController = require("../controllers/checkerController");
 const chatbotController = require("../controllers/chatbotController");
+const quizController = require("../controllers/quizController");
 const aboutController = require("../controllers/aboutController");
 const reportController = require("../controllers/reportController");
 const feedbackController = require("../controllers/feedbackController");
@@ -58,6 +59,9 @@ router.post("/checker", (req, res) => {
 });
 router.get("/chatbot", chatbotController.showChatbot);
 router.post("/chatbot/recommended-learning-context", chatbotController.submitRecommendedLearningContext);
+router.get("/scam-quiz", quizController.showQuiz);
+router.post("/scam-quiz/start", quizController.startQuiz);
+router.post("/scam-quiz/submit", quizController.submitQuiz);
 router.get("/digital-twin", digitalTwinController.showPage);
 router.get("/report-scam", reportController.showReport);
 router.post("/report-scam", reportController.submitReport);
